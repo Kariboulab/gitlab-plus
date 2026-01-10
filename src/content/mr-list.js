@@ -2,22 +2,22 @@
 // Injects quick filter buttons on merge request list pages
 
 (function () {
-  "use strict";
+  'use strict';
 
   const MessageTypes = {
-    GET_FILTERS: "GET_FILTERS",
-    GET_PREFERENCES: "GET_PREFERENCES",
-    GET_CURRENT_USER: "GET_CURRENT_USER",
-    APPROVE_MR: "APPROVE_MR",
-    UNAPPROVE_MR: "UNAPPROVE_MR",
-    GET_MR_APPROVAL_STATUS: "GET_MR_APPROVAL_STATUS",
+    GET_FILTERS: 'GET_FILTERS',
+    GET_PREFERENCES: 'GET_PREFERENCES',
+    GET_CURRENT_USER: 'GET_CURRENT_USER',
+    APPROVE_MR: 'APPROVE_MR',
+    UNAPPROVE_MR: 'UNAPPROVE_MR',
+    GET_MR_APPROVAL_STATUS: 'GET_MR_APPROVAL_STATUS'
   };
 
   // URL patterns for MR list pages
   const MR_LIST_PATTERNS = [
     /gitlab\.com\/.*\/-\/merge_requests\/?(\?.*)?$/,
     /gitlab\.com\/dashboard\/merge_requests/,
-    /gitlab\.com\/groups\/.*\/-\/merge_requests/,
+    /gitlab\.com\/groups\/.*\/-\/merge_requests/
   ];
 
   // Check if current page is an MR list
@@ -36,7 +36,7 @@
         } else if (response && response.success) {
           resolve(response.data);
         } else {
-          reject(new Error(response?.error || "Unknown error"));
+          reject(new Error(response?.error || 'Unknown error'));
         }
       });
     });
@@ -48,19 +48,19 @@
 
     // Clear existing filter params
     const filterParams = [
-      "scope",
-      "state",
-      "author_username",
-      "assignee_username",
-      "reviewer_username",
-      "label_name",
-      "label_name[]",
+      'scope',
+      'state',
+      'author_username',
+      'assignee_username',
+      'reviewer_username',
+      'label_name',
+      'label_name[]'
     ];
     filterParams.forEach((param) => url.searchParams.delete(param));
 
     // Apply new params
     Object.entries(filter.params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
+      if (value !== undefined && value !== null && value !== '') {
         // Handle @me substitution (will be handled by GitLab)
         url.searchParams.set(key, value);
       }
@@ -74,38 +74,40 @@
     const url = new URL(window.location.href);
 
     return Object.entries(filter.params).every(([key, value]) => {
-      if (value === undefined || value === null || value === "") return true;
+      if (value === undefined || value === null || value === '') {
+        return true;
+      }
       return url.searchParams.get(key) === value;
     });
   }
 
   // Create filter buttons container
   function createFiltersContainer(filters) {
-    const container = document.createElement("div");
-    container.id = "gitlab-plus-filters";
-    container.className = "gitlab-plus-filters";
+    const container = document.createElement('div');
+    container.id = 'gitlab-plus-filters';
+    container.className = 'gitlab-plus-filters';
 
-    const label = document.createElement("span");
-    label.className = "gitlab-plus-filters-label";
-    label.textContent = "Quick Filters:";
+    const label = document.createElement('span');
+    label.className = 'gitlab-plus-filters-label';
+    label.textContent = 'Quick Filters:';
     container.appendChild(label);
 
-    const buttonsContainer = document.createElement("div");
-    buttonsContainer.className = "gitlab-plus-filters-buttons";
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'gitlab-plus-filters-buttons';
 
     filters
       .filter((f) => f.enabled)
       .forEach((filter) => {
-        const button = document.createElement("button");
-        button.className = "gitlab-plus-filter-btn";
+        const button = document.createElement('button');
+        button.className = 'gitlab-plus-filter-btn';
         button.textContent = filter.name;
         button.dataset.filterId = filter.id;
 
         if (isFilterActive(filter)) {
-          button.classList.add("active");
+          button.classList.add('active');
         }
 
-        button.addEventListener("click", () => {
+        button.addEventListener('click', () => {
           window.location.href = generateFilterUrl(filter);
         });
 
@@ -113,19 +115,19 @@
       });
 
     // Add clear filters button
-    const clearBtn = document.createElement("button");
-    clearBtn.className = "gitlab-plus-filter-btn gitlab-plus-clear-btn";
-    clearBtn.textContent = "Clear";
-    clearBtn.addEventListener("click", () => {
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'gitlab-plus-filter-btn gitlab-plus-clear-btn';
+    clearBtn.textContent = 'Clear';
+    clearBtn.addEventListener('click', () => {
       const url = new URL(window.location.href);
       const filterParams = [
-        "scope",
-        "state",
-        "author_username",
-        "assignee_username",
-        "reviewer_username",
-        "label_name",
-        "label_name[]",
+        'scope',
+        'state',
+        'author_username',
+        'assignee_username',
+        'reviewer_username',
+        'label_name',
+        'label_name[]'
       ];
       filterParams.forEach((param) => url.searchParams.delete(param));
       window.location.href = url.toString();
@@ -159,7 +161,9 @@
       '.issue-title-text a'
     );
 
-    if (!titleLink) return null;
+    if (!titleLink) {
+      return null;
+    }
 
     const href = titleLink.getAttribute('href');
     const title = titleLink.textContent.trim();
@@ -167,7 +171,9 @@
     // Parse project path and MR IID from URL
     // Format: /group/project/-/merge_requests/123
     const match = href.match(/\/(.+?)\/-\/merge_requests\/(\d+)/);
-    if (!match) return null;
+    if (!match) {
+      return null;
+    }
 
     return {
       projectPath: match[1],
@@ -183,11 +189,15 @@
     const rows = getMRRows();
 
     rows.forEach(row => {
-      if (row.classList.contains('gitlab-plus-draft-processed')) return;
+      if (row.classList.contains('gitlab-plus-draft-processed')) {
+        return;
+      }
       row.classList.add('gitlab-plus-draft-processed');
 
       const mrInfo = getMRInfoFromRow(row);
-      if (!mrInfo) return;
+      if (!mrInfo) {
+        return;
+      }
 
       // Check if title starts with Draft: or WIP:
       const isDraft = /^(Draft:|WIP:|\[Draft\]|\[WIP\])/i.test(mrInfo.title);
@@ -203,14 +213,20 @@
     const rows = getMRRows();
 
     rows.forEach(row => {
-      if (row.querySelector('.gitlab-plus-age-badge')) return;
+      if (row.querySelector('.gitlab-plus-age-badge')) {
+        return;
+      }
 
       // Find the time element
       const timeEl = row.querySelector('time[datetime]');
-      if (!timeEl) return;
+      if (!timeEl) {
+        return;
+      }
 
       const datetime = timeEl.getAttribute('datetime');
-      if (!datetime) return;
+      if (!datetime) {
+        return;
+      }
 
       const created = new Date(datetime);
       const now = new Date();
@@ -257,10 +273,14 @@
     const rows = getMRRows();
 
     rows.forEach(row => {
-      if (row.querySelector('.gitlab-plus-copy-btn')) return;
+      if (row.querySelector('.gitlab-plus-copy-btn')) {
+        return;
+      }
 
       const mrInfo = getMRInfoFromRow(row);
-      if (!mrInfo || !mrInfo.titleElement) return;
+      if (!mrInfo || !mrInfo.titleElement) {
+        return;
+      }
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'gitlab-plus-copy-btn gitlab-plus-action-btn';
@@ -310,7 +330,9 @@
 
     for (const selector of selectors) {
       const container = row.querySelector(selector);
-      if (container) return container;
+      if (container) {
+        return container;
+      }
     }
 
     return null;
@@ -321,8 +343,12 @@
   let currentUserPromise = null;
 
   async function getCurrentUser() {
-    if (cachedCurrentUser) return cachedCurrentUser;
-    if (currentUserPromise) return currentUserPromise;
+    if (cachedCurrentUser) {
+      return cachedCurrentUser;
+    }
+    if (currentUserPromise) {
+      return currentUserPromise;
+    }
 
     currentUserPromise = sendMessage(MessageTypes.GET_CURRENT_USER)
       .then(user => {
@@ -342,9 +368,13 @@
     const rows = getMRRows();
 
     rows.forEach(row => {
-      if (row.querySelector('.gitlab-plus-approve-btn')) return;
+      if (row.querySelector('.gitlab-plus-approve-btn')) {
+        return;
+      }
       // Mark as processing to avoid duplicate processing
-      if (row.dataset.gitlabPlusApproveProcessing) return;
+      if (row.dataset.gitlabPlusApproveProcessing) {
+        return;
+      }
       row.dataset.gitlabPlusApproveProcessing = 'true';
 
       const mrInfo = getMRInfoFromRow(row);
@@ -411,7 +441,9 @@
         e.preventDefault();
         e.stopPropagation();
 
-        if (approveBtn.disabled) return;
+        if (approveBtn.disabled) {
+          return;
+        }
         approveBtn.disabled = true;
         approveBtn.classList.add('approving');
         approveBtn.textContent = '...';
@@ -473,32 +505,6 @@
     });
   }
 
-  // Get or create actions container for a row
-  function getOrCreateActionsContainer(row) {
-    let container = row.querySelector('.gitlab-plus-mr-actions');
-    if (container) return container;
-
-    // Try to find existing controls area
-    const existingControls = row.querySelector(
-      '.issuable-meta, ' +
-      '.controls, ' +
-      '.merge-request-info, ' +
-      '[data-testid="issuable-meta"]'
-    );
-
-    container = document.createElement('div');
-    container.className = 'gitlab-plus-mr-actions';
-
-    if (existingControls) {
-      existingControls.appendChild(container);
-    } else {
-      // Fallback: append to the row itself
-      row.appendChild(container);
-    }
-
-    return container;
-  }
-
   // Cached preferences for re-applying enhancements
   let cachedPrefs = null;
 
@@ -525,27 +531,27 @@
   function findInjectionPoint() {
     // Primary target: inside the vue-filtered-search-bar-container (flex row)
     const searchBarContainer = document.querySelector(
-      ".vue-filtered-search-bar-container"
+      '.vue-filtered-search-bar-container'
     );
     if (searchBarContainer) {
-      return { element: searchBarContainer, position: "inside" };
+      return { element: searchBarContainer, position: 'inside' };
     }
 
     // Fallback selectors for various GitLab page layouts
     const selectors = [
-      ".content-list",
-      ".top-area .nav-controls",
-      ".nav-controls",
-      ".page-title-controls",
-      ".top-area",
-      ".mr-list",
-      ".issuable-list",
+      '.content-list',
+      '.top-area .nav-controls',
+      '.nav-controls',
+      '.page-title-controls',
+      '.top-area',
+      '.mr-list',
+      '.issuable-list'
     ];
 
     for (const selector of selectors) {
       const element = document.querySelector(selector);
       if (element) {
-        return { element, position: "before" };
+        return { element, position: 'before' };
       }
     }
 
@@ -563,7 +569,7 @@
       await applyMREnhancements(prefs);
 
       // Check if filters already injected
-      if (document.getElementById("gitlab-plus-filters")) {
+      if (document.getElementById('gitlab-plus-filters')) {
         return;
       }
 
@@ -580,17 +586,17 @@
       // Find injection point
       const injection = findInjectionPoint();
       if (!injection) {
-        console.log("GitLab Plus: Could not find injection point for filters");
+        console.log('GitLab Plus: Could not find injection point for filters');
         return;
       }
 
       // Create and inject container
       const container = createFiltersContainer(filters);
 
-      if (injection.position === "inside") {
+      if (injection.position === 'inside') {
         // Append inside the container (at the end)
         injection.element.appendChild(container);
-      } else if (injection.position === "before") {
+      } else if (injection.position === 'before') {
         injection.element.parentNode.insertBefore(container, injection.element);
       } else {
         injection.element.parentNode.insertBefore(
@@ -599,16 +605,16 @@
         );
       }
 
-      console.log("GitLab Plus: Filters injected successfully");
+      console.log('GitLab Plus: Filters injected successfully');
     } catch (error) {
-      console.error("GitLab Plus: Error injecting filters:", error);
+      console.error('GitLab Plus: Error injecting filters:', error);
     }
   }
 
   // Handle page changes (SPA navigation)
   function handlePageChange() {
     // Remove existing filters
-    const existing = document.getElementById("gitlab-plus-filters");
+    const existing = document.getElementById('gitlab-plus-filters');
     if (existing) {
       existing.remove();
     }
@@ -631,7 +637,9 @@
 
   // Re-apply enhancements (debounced)
   const reapplyEnhancements = debounce(async () => {
-    if (!isMRListPage()) return;
+    if (!isMRListPage()) {
+      return;
+    }
 
     if (!cachedPrefs) {
       try {
@@ -669,7 +677,9 @@
       const hasNewContent = mutations.some(mutation => {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           return Array.from(mutation.addedNodes).some(node => {
-            if (node.nodeType !== Node.ELEMENT_NODE) return false;
+            if (node.nodeType !== Node.ELEMENT_NODE) {
+              return false;
+            }
             // Check if the added node is or contains MR rows
             return node.matches?.('.merge-request, li[data-id], .issuable-list > li, [data-testid="issuable-container"]') ||
                    node.querySelector?.('.merge-request, li[data-id], .issuable-list > li, [data-testid="issuable-container"]');
@@ -686,12 +696,12 @@
     observer.observe(document.body, { childList: true, subtree: true });
 
     // Also listen for popstate
-    window.addEventListener("popstate", handlePageChange);
+    window.addEventListener('popstate', handlePageChange);
   }
 
   // Run when DOM is ready
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }

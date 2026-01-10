@@ -529,75 +529,75 @@ async function handleMessage(message) {
   const { type, payload } = message;
 
   switch (type) {
-    case MessageTypes.GET_TOKEN:
-      return await getToken();
+  case MessageTypes.GET_TOKEN:
+    return await getToken();
 
-    case MessageTypes.SAVE_TOKEN:
-      await saveToken(payload.token);
-      return { saved: true };
+  case MessageTypes.SAVE_TOKEN:
+    await saveToken(payload.token);
+    return { saved: true };
 
-    case MessageTypes.CLEAR_TOKEN:
-      await clearToken();
-      return { cleared: true };
+  case MessageTypes.CLEAR_TOKEN:
+    await clearToken();
+    return { cleared: true };
 
-    case MessageTypes.VALIDATE_TOKEN:
-      return await validateToken(payload.token);
+  case MessageTypes.VALIDATE_TOKEN:
+    return await validateToken(payload.token);
 
-    case MessageTypes.GET_CURRENT_USER:
-      return await getCurrentUser();
+  case MessageTypes.GET_CURRENT_USER:
+    return await getCurrentUser();
 
-    case MessageTypes.SEARCH_USERS:
-      return await searchUsers(payload.query);
+  case MessageTypes.SEARCH_USERS:
+    return await searchUsers(payload.query);
 
-    case MessageTypes.GET_FILTERS:
-      return await Storage.getFilters();
+  case MessageTypes.GET_FILTERS:
+    return await Storage.getFilters();
 
-    case MessageTypes.SAVE_FILTERS:
-      await Storage.setFilters(payload.filters);
-      return { saved: true };
+  case MessageTypes.SAVE_FILTERS:
+    await Storage.setFilters(payload.filters);
+    return { saved: true };
 
-    case MessageTypes.GET_REVIEWER_PRESETS:
-      return await Storage.getReviewerPresets();
+  case MessageTypes.GET_REVIEWER_PRESETS:
+    return await Storage.getReviewerPresets();
 
-    case MessageTypes.SAVE_REVIEWER_PRESETS:
-      await Storage.setReviewerPresets(payload.presets);
-      return { saved: true };
+  case MessageTypes.SAVE_REVIEWER_PRESETS:
+    await Storage.setReviewerPresets(payload.presets);
+    return { saved: true };
 
-    case MessageTypes.GET_PREFERENCES:
-      return await Storage.getPreferences();
+  case MessageTypes.GET_PREFERENCES:
+    return await Storage.getPreferences();
 
-    case MessageTypes.SAVE_PREFERENCES:
-      await Storage.setPreferences(payload.preferences);
-      return { saved: true };
+  case MessageTypes.SAVE_PREFERENCES:
+    await Storage.setPreferences(payload.preferences);
+    return { saved: true };
 
-    case MessageTypes.GET_GITLAB_GROUP:
-      return await Storage.getGitLabGroup();
+  case MessageTypes.GET_GITLAB_GROUP:
+    return await Storage.getGitLabGroup();
 
-    case MessageTypes.SAVE_GITLAB_GROUP:
-      await Storage.setGitLabGroup(payload.groupId);
-      return { saved: true };
+  case MessageTypes.SAVE_GITLAB_GROUP:
+    await Storage.setGitLabGroup(payload.groupId);
+    return { saved: true };
 
-    case MessageTypes.GET_USER_GROUPS:
-      return await getUserGroups();
+  case MessageTypes.GET_USER_GROUPS:
+    return await getUserGroups();
 
-    case MessageTypes.OPEN_OPTIONS:
-      chrome.runtime.openOptionsPage();
-      return { opened: true };
+  case MessageTypes.OPEN_OPTIONS:
+    chrome.runtime.openOptionsPage();
+    return { opened: true };
 
-    case MessageTypes.ADD_REVIEWERS_TO_MR:
-      return await addReviewersToMR(payload.projectPath, payload.mrIid, payload.reviewerIds);
+  case MessageTypes.ADD_REVIEWERS_TO_MR:
+    return await addReviewersToMR(payload.projectPath, payload.mrIid, payload.reviewerIds);
 
-    case MessageTypes.APPROVE_MR:
-      return await approveMR(payload.projectPath, payload.mrIid);
+  case MessageTypes.APPROVE_MR:
+    return await approveMR(payload.projectPath, payload.mrIid);
 
-    case MessageTypes.UNAPPROVE_MR:
-      return await unapproveMR(payload.projectPath, payload.mrIid);
+  case MessageTypes.UNAPPROVE_MR:
+    return await unapproveMR(payload.projectPath, payload.mrIid);
 
-    case MessageTypes.GET_MR_APPROVAL_STATUS:
-      return await getMRApprovalStatus(payload.projectPath, payload.mrIid);
+  case MessageTypes.GET_MR_APPROVAL_STATUS:
+    return await getMRApprovalStatus(payload.projectPath, payload.mrIid);
 
-    default:
-      throw new Error(`Unknown message type: ${type}`);
+  default:
+    throw new Error(`Unknown message type: ${type}`);
   }
 }
 

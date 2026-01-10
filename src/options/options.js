@@ -160,7 +160,7 @@ async function loadGroups() {
         const option = document.createElement('option');
         option.value = group.id;
         option.textContent = group.full_path;
-        if (savedGroup && savedGroup == group.id) {
+        if (savedGroup && savedGroup === group.id) {
           option.selected = true;
         }
         groupSelect.appendChild(option);
@@ -221,12 +221,24 @@ function renderFilters() {
 
 function getFilterDescription(filter) {
   const parts = [];
-  if (filter.params.scope) parts.push(`Scope: ${filter.params.scope}`);
-  if (filter.params.author_username) parts.push(`Author: ${filter.params.author_username}`);
-  if (filter.params.assignee_username) parts.push(`Assignee: ${filter.params.assignee_username}`);
-  if (filter.params.reviewer_username) parts.push(`Reviewer: ${filter.params.reviewer_username}`);
-  if (filter.params.label_name) parts.push(`Label: ${filter.params.label_name}`);
-  if (filter.params.state) parts.push(`State: ${filter.params.state}`);
+  if (filter.params.scope) {
+    parts.push(`Scope: ${filter.params.scope}`);
+  }
+  if (filter.params.author_username) {
+    parts.push(`Author: ${filter.params.author_username}`);
+  }
+  if (filter.params.assignee_username) {
+    parts.push(`Assignee: ${filter.params.assignee_username}`);
+  }
+  if (filter.params.reviewer_username) {
+    parts.push(`Reviewer: ${filter.params.reviewer_username}`);
+  }
+  if (filter.params.label_name) {
+    parts.push(`Label: ${filter.params.label_name}`);
+  }
+  if (filter.params.state) {
+    parts.push(`State: ${filter.params.state}`);
+  }
   return parts.join(' | ');
 }
 
@@ -399,7 +411,7 @@ let searchTimeout;
 let usernameSearchTimeout;
 
 // Generic user search function
-async function searchUsers(query, resultsElementId, onSelect) {
+async function searchUsers(query, resultsElementId, _onSelect) {
   const results = document.getElementById(resultsElementId);
 
   if (!query || query.length < 2) {
@@ -562,7 +574,9 @@ function setupEventListeners() {
     input.type = input.type === 'password' ? 'text' : 'password';
   });
   document.getElementById('token-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') validateAndSaveToken();
+    if (e.key === 'Enter') {
+      validateAndSaveToken();
+    }
   });
 
   // Group selection
@@ -597,13 +611,19 @@ function setupEventListeners() {
 
   document.getElementById('filters-list').addEventListener('click', (e) => {
     const item = e.target.closest('.item');
-    if (!item) return;
+    if (!item) {
+      return;
+    }
     const id = item.dataset.id;
     const action = e.target.dataset.action || e.target.closest('[data-action]')?.dataset.action;
 
-    if (action === 'toggle') toggleFilter(id);
-    else if (action === 'edit') openFilterModal(filters.find(f => f.id === id));
-    else if (action === 'delete') deleteFilter(id);
+    if (action === 'toggle') {
+      toggleFilter(id);
+    } else if (action === 'edit') {
+      openFilterModal(filters.find(f => f.id === id));
+    } else if (action === 'delete') {
+      deleteFilter(id);
+    }
   });
 
   // Presets
@@ -625,19 +645,27 @@ function setupEventListeners() {
   document.getElementById('selected-reviewers').addEventListener('click', (e) => {
     if (e.target.dataset.action === 'remove-reviewer') {
       const tag = e.target.closest('.reviewer-tag');
-      if (tag) removeReviewer(tag.dataset.username);
+      if (tag) {
+        removeReviewer(tag.dataset.username);
+      }
     }
   });
 
   document.getElementById('presets-list').addEventListener('click', (e) => {
     const item = e.target.closest('.item');
-    if (!item) return;
+    if (!item) {
+      return;
+    }
     const id = item.dataset.id;
     const action = e.target.dataset.action || e.target.closest('[data-action]')?.dataset.action;
 
-    if (action === 'toggle') togglePreset(id);
-    else if (action === 'edit') openPresetModal(presets.find(p => p.id === id));
-    else if (action === 'delete') deletePreset(id);
+    if (action === 'toggle') {
+      togglePreset(id);
+    } else if (action === 'edit') {
+      openPresetModal(presets.find(p => p.id === id));
+    } else if (action === 'delete') {
+      deletePreset(id);
+    }
   });
 
   // Preferences

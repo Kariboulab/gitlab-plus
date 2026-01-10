@@ -118,7 +118,9 @@
   // Get and clear pending reviewers
   function getPendingReviewers() {
     const data = sessionStorage.getItem(PENDING_REVIEWERS_KEY);
-    if (!data) return null;
+    if (!data) {
+      return null;
+    }
 
     sessionStorage.removeItem(PENDING_REVIEWERS_KEY);
     const parsed = JSON.parse(data);
@@ -186,13 +188,19 @@
 
   // Check and apply pending reviewers after MR creation
   async function checkPendingReviewers() {
-    if (!isMRShowPage()) return;
+    if (!isMRShowPage()) {
+      return;
+    }
 
     const pending = getPendingReviewers();
-    if (!pending) return;
+    if (!pending) {
+      return;
+    }
 
     const mrInfo = getMRInfoFromUrl();
-    if (!mrInfo || !mrInfo.mrIid) return;
+    if (!mrInfo || !mrInfo.mrIid) {
+      return;
+    }
 
     // Check if we're on the same project
     if (!mrInfo.projectPath.includes(pending.projectPath) && !pending.projectPath.includes(mrInfo.projectPath)) {
