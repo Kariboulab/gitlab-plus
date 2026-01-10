@@ -1,0 +1,50 @@
+{
+  "name": "GitLab Plus",
+  "description": "Enhanced GitLab experience with quick filters and reviewer presets",
+  "version": "1.0.0",
+  "manifest_version": 3,
+
+  "permissions": [
+    "storage"
+  ],
+
+  "host_permissions": [
+    "https://gitlab.com/*"
+  ],
+
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://gitlab.com/*"],
+      "js": [
+        "src/content/mr-list.js",
+        "src/content/mr-create.js"
+      ],
+      "css": [
+        "src/content/mr-list.css",
+        "src/content/mr-create.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "options_page": "src/options/options.html",
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

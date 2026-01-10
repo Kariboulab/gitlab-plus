@@ -1,0 +1,163 @@
+/* GitLab Plus - MR Create Reviewer Preset Styles */
+
+/* Light theme (default) */
+.gitlab-plus-presets {
+  padding: 12px;
+  margin: 0 0 16px 0;
+  background: #f5f2fc;
+  border: 1px solid #d4c7f0;
+  border-radius: 4px;
+}
+
+.gitlab-plus-presets-header {
+  margin-bottom: 8px;
+}
+
+.gitlab-plus-presets-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b4fbb;
+}
+
+.gitlab-plus-presets-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.gitlab-plus-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #525252;
+  background: white;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gitlab-plus-preset-btn:hover {
+  background: #6b4fbb;
+  color: white;
+  border-color: #6b4fbb;
+}
+
+.gitlab-plus-preset-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.gitlab-plus-preset-btn .preset-name {
+  font-weight: 500;
+}
+
+.gitlab-plus-preset-btn .preset-count {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.gitlab-plus-presets-help {
+  font-size: 11px;
+  color: #737373;
+  font-style: italic;
+}
+
+.gitlab-plus-presets-status {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: none;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+}
+
+.gitlab-plus-presets-status:not(:empty) {
+  display: block;
+}
+
+.gitlab-plus-presets-status.success {
+  background: #e6f4ec !important;
+  color: #108548 !important;
+}
+
+.gitlab-plus-presets-status.loading {
+  background: #fdf4e8 !important;
+  color: #c17d10 !important;
+}
+
+.gitlab-plus-presets-status.error {
+  background: #fef2f1 !important;
+  color: #dd2b0e !important;
+}
+
+/* Dark theme - GitLab uses various selectors for dark mode */
+body.gl-dark .gitlab-plus-presets,
+html.gl-dark .gitlab-plus-presets,
+[data-theme="dark"] .gitlab-plus-presets,
+.theme-dark .gitlab-plus-presets {
+  background: #2d2a3d;
+  border-color: #4a4560;
+}
+
+body.gl-dark .gitlab-plus-presets-label,
+html.gl-dark .gitlab-plus-presets-label,
+[data-theme="dark"] .gitlab-plus-presets-label,
+.theme-dark .gitlab-plus-presets-label {
+  color: #a78bfa;
+}
+
+body.gl-dark .gitlab-plus-preset-btn,
+html.gl-dark .gitlab-plus-preset-btn,
+[data-theme="dark"] .gitlab-plus-preset-btn,
+.theme-dark .gitlab-plus-preset-btn {
+  color: #bfbfbf;
+  background: #2d2d2d;
+  border-color: #404040;
+}
+
+body.gl-dark .gitlab-plus-preset-btn:hover,
+html.gl-dark .gitlab-plus-preset-btn:hover,
+[data-theme="dark"] .gitlab-plus-preset-btn:hover,
+.theme-dark .gitlab-plus-preset-btn:hover {
+  background: #6b4fbb;
+  color: white;
+  border-color: #6b4fbb;
+}
+
+body.gl-dark .gitlab-plus-presets-help,
+html.gl-dark .gitlab-plus-presets-help,
+[data-theme="dark"] .gitlab-plus-presets-help,
+.theme-dark .gitlab-plus-presets-help {
+  color: #868686;
+}
+
+body.gl-dark .gitlab-plus-presets-status.success,
+html.gl-dark .gitlab-plus-presets-status.success,
+[data-theme="dark"] .gitlab-plus-presets-status.success,
+.theme-dark .gitlab-plus-presets-status.success {
+  background: #1a3a2a !important;
+  color: #4ade80 !important;
+}
+
+body.gl-dark .gitlab-plus-presets-status.loading,
+html.gl-dark .gitlab-plus-presets-status.loading,
+[data-theme="dark"] .gitlab-plus-presets-status.loading,
+.theme-dark .gitlab-plus-presets-status.loading {
+  background: #3a2a1a !important;
+  color: #fbbf24 !important;
+}
+
+body.gl-dark .gitlab-plus-presets-status.error,
+html.gl-dark .gitlab-plus-presets-status.error,
+[data-theme="dark"] .gitlab-plus-presets-status.error,
+.theme-dark .gitlab-plus-presets-status.error {
+  background: #3a1a1a !important;
+  color: #f87171 !important;
+}

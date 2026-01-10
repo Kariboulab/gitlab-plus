@@ -1,0 +1,28 @@
+{
+  "name": "gitlab-plus",
+  "version": "1.0.0",
+  "description": "Chrome extension that enhances GitLab with productivity features for merge request workflows",
+  "private": true,
+  "scripts": {
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "build": "zip -r dist/gitlab-plus.zip manifest.json icons/ src/ -x '*.DS_Store'",
+    "clean": "rm -rf dist/"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "globals": "^15.0.0"
+  },
+  "keywords": [
+    "chrome-extension",
+    "gitlab",
+    "merge-request",
+    "productivity"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/gitlab-plus.git"
+  }
+}

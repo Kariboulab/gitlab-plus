@@ -1,0 +1,206 @@
+/* GitLab Plus - MR List Filter Styles */
+
+/* Light theme (default) */
+/* Enable wrapping on parent container so filters appear on new line */
+.vue-filtered-search-bar-container:has(.gitlab-plus-filters) {
+  flex-wrap: wrap;
+}
+
+/* Designed to fit inside .vue-filtered-search-bar-container (flex row) */
+.gitlab-plus-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 0 0;
+  margin: 0;
+  flex-basis: 100%; /* Force to new line in flex container */
+  order: 999; /* Ensure it appears last/below other elements */
+  background: transparent;
+  border: none;
+}
+
+.gitlab-plus-filters-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gl-text-color-default);
+  white-space: nowrap;
+}
+
+.gitlab-plus-filters-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gitlab-plus-filter-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gl-text-color-default);
+  background: var(--gl-background-color-default, white);
+  border: 1px solid var(--gl-border-color-default, #dbdbdb);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gitlab-plus-filter-btn:hover {
+  background: var(--gl-background-color-subtle, #f0f0f0);
+  border-color: var(--gl-border-color-strong, #bfbfbf);
+}
+
+.gitlab-plus-filter-btn.active {
+  background: var(--gl-button-confirm-primary-background-color-default);
+  color: var(--gl-button-confirm-primary-foreground-color-default);
+  border-color: var(--gl-button-confirm-primary-background-color-default);
+}
+
+.gitlab-plus-filter-btn.active:hover {
+  background: var(
+    --gl-button-confirm-primary-background-color-hover,
+    var(--gl-button-confirm-primary-background-color-default)
+  );
+  color: var(--gl-button-confirm-primary-foreground-color-default);
+  border-color: var(
+    --gl-button-confirm-primary-background-color-hover,
+    var(--gl-button-confirm-primary-background-color-default)
+  );
+}
+
+.gitlab-plus-clear-btn {
+  color: var(--gl-text-color-subtle, #737373);
+  font-weight: 400;
+}
+
+.gitlab-plus-clear-btn:hover {
+  color: var(--gl-text-color-danger, #dd2b0e);
+  border-color: var(--gl-text-color-danger, #dd2b0e);
+}
+
+/* Dark theme styles are handled automatically by GitLab CSS variables */
+
+/* ===========================================
+   MR List Enhancement Styles
+   =========================================== */
+
+/* Draft/WIP MR Dimming */
+.gitlab-plus-draft {
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.gitlab-plus-draft:hover {
+  opacity: 0.8;
+}
+
+/* MR Age Indicator Badges */
+.gitlab-plus-age-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 10px;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.gitlab-plus-age-fresh {
+  background: var(--gl-background-color-success-subtle, #d1fab4);
+  color: var(--gl-text-color-success, #217645);
+}
+
+.gitlab-plus-age-aging {
+  background: var(--gl-background-color-warning-subtle, #ffeab6);
+  color: var(--gl-text-color-warning, #9e6a00);
+}
+
+.gitlab-plus-age-stale {
+  background: var(--gl-background-color-danger-subtle, #fdd4cd);
+  color: var(--gl-text-color-danger, #c91c00);
+}
+
+/* MR Actions Container */
+.gitlab-plus-mr-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+/* Common Action Button Base Styles */
+.gitlab-plus-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--gl-border-color-default, #dbdbdb);
+  background: var(--gl-background-color-default, white);
+  color: var(--gl-text-color-default);
+}
+
+.gitlab-plus-action-btn:hover {
+  background: var(--gl-background-color-subtle, #f0f0f0);
+  border-color: var(--gl-border-color-strong, #bfbfbf);
+}
+
+/* Copy Link Button - positioned inline next to title */
+.gitlab-plus-copy-btn {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.gitlab-plus-copy-btn:hover {
+  color: var(--gl-text-color-link, #1068bf);
+  border-color: var(--gl-text-color-link, #1068bf);
+}
+
+.gitlab-plus-copy-btn.copied {
+  background: var(--gl-background-color-success-subtle, #d1fab4);
+  color: var(--gl-text-color-success, #217645);
+  border-color: var(--gl-text-color-success, #217645);
+}
+
+/* Quick Approve Button - inline with controls */
+.gitlab-plus-approve-btn {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.gitlab-plus-approve-btn:hover {
+  background: var(--gl-background-color-success-subtle, #d1fab4);
+  color: var(--gl-text-color-success, #217645);
+  border-color: var(--gl-text-color-success, #217645);
+}
+
+.gitlab-plus-approve-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gitlab-plus-approve-btn.approving {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.gitlab-plus-approve-btn.approved {
+  /* Same style as default button */
+  cursor: pointer;
+}
+
+.gitlab-plus-approve-btn.approved:hover {
+  background: var(--gl-background-color-danger-subtle, #fdd4cd);
+  color: var(--gl-text-color-danger, #c91c00);
+  border-color: var(--gl-text-color-danger, #c91c00);
+}
+
+.gitlab-plus-approve-btn.error {
+  background: var(--gl-background-color-danger-subtle, #fdd4cd);
+  color: var(--gl-text-color-danger, #c91c00);
+  border-color: var(--gl-text-color-danger, #c91c00);
+}
