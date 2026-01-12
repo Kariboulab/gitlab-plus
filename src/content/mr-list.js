@@ -27,6 +27,11 @@
     );
   }
 
+  // Check if current page is the dashboard MR list (where scope params work)
+  function isDashboardPage() {
+    return /gitlab\.com\/dashboard\/merge_requests/.test(window.location.href);
+  }
+
   // Send message to background script
   async function sendMessage(type, payload = {}) {
     return new Promise((resolve, reject) => {
@@ -42,9 +47,12 @@
     });
   }
 
-  // Generate filter URL
-  function generateFilterUrl(filter) {
+  // Generate filter URL with proper parameter transformation
+  // On dashboard pages, scope params work directly
+  // On project/group pages, we need to use explicit username params
+  function generateFilterUrl(filter, currentUsername) {
     const url = new URL(window.location.href);
+    const onDashboard = isDashboardPage();
 
     // Clear existing filter params
     const filterParams = [
@@ -58,31 +66,65 @@
     ];
     filterParams.forEach((param) => url.searchParams.delete(param));
 
-    // Apply new params
+    // Apply new params with transformations
     Object.entries(filter.params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        // Handle @me substitution (will be handled by GitLab)
-        url.searchParams.set(key, value);
+      if (value === undefined || value === null || value === '') {
+        return;
       }
+
+      // Replace @me with actual username
+      if (value === '@me' && currentUsername) {
+        value = currentUsername;
+      }
+
+      // On non-dashboard pages, transform scope params to explicit username params
+      if (!onDashboard && key === 'scope' && currentUsername) {
+        if (value === 'created_by_me') {
+          url.searchParams.set('author_username', currentUsername);
+          return;
+        } else if (value === 'assigned_to_me') {
+          url.searchParams.set('assignee_username', currentUsername);
+          return;
+        }
+      }
+
+      url.searchParams.set(key, value);
     });
 
     return url.toString();
   }
 
-  // Check if filter is active
-  function isFilterActive(filter) {
+  // Check if filter is active (considering parameter transformations)
+  function isFilterActive(filter, currentUsername) {
     const url = new URL(window.location.href);
+    const onDashboard = isDashboardPage();
 
     return Object.entries(filter.params).every(([key, value]) => {
       if (value === undefined || value === null || value === '') {
         return true;
       }
-      return url.searchParams.get(key) === value;
+
+      // Handle @me substitution
+      let expectedValue = value;
+      if (value === '@me' && currentUsername) {
+        expectedValue = currentUsername;
+      }
+
+      // On non-dashboard pages, check transformed params
+      if (!onDashboard && key === 'scope' && currentUsername) {
+        if (value === 'created_by_me') {
+          return url.searchParams.get('author_username') === currentUsername;
+        } else if (value === 'assigned_to_me') {
+          return url.searchParams.get('assignee_username') === currentUsername;
+        }
+      }
+
+      return url.searchParams.get(key) === expectedValue;
     });
   }
 
   // Create filter buttons container
-  function createFiltersContainer(filters) {
+  function createFiltersContainer(filters, currentUsername) {
     const container = document.createElement('div');
     container.id = 'gitlab-plus-filters';
     container.className = 'gitlab-plus-filters';
@@ -103,12 +145,12 @@
         button.textContent = filter.name;
         button.dataset.filterId = filter.id;
 
-        if (isFilterActive(filter)) {
+        if (isFilterActive(filter, currentUsername)) {
           button.classList.add('active');
         }
 
         button.addEventListener('click', () => {
-          window.location.href = generateFilterUrl(filter);
+          window.location.href = generateFilterUrl(filter, currentUsername);
         });
 
         buttonsContainer.appendChild(button);
@@ -208,27 +250,47 @@
     });
   }
 
+  // Parse date from GitLab's human-readable format
+  // Format: "January 12, 2026 at 10:09:35 AM EST"
+  function parseGitLabDate(dateStr) {
+    if (!dateStr) {
+      return null;
+    }
+    // Remove "at" to make it parseable by Date constructor
+    const cleaned = dateStr.replace(' at ', ' ');
+    const date = new Date(cleaned);
+    return isNaN(date.getTime()) ? null : date;
+  }
+
   // Add age indicators to MR rows
   function addAgeIndicators(staleDays = 7) {
     const rows = getMRRows();
 
     rows.forEach(row => {
-      if (row.querySelector('.gitlab-plus-age-badge')) {
+      if (row.querySelector('.gitlab-plus-age-dot')) {
         return;
       }
 
-      // Find the time element
-      const timeEl = row.querySelector('time[datetime]');
-      if (!timeEl) {
-        return;
+      // Try new GitLab structure first (button with data-testid)
+      let dateEl = row.querySelector('button[data-testid="issuable-created-at"]');
+      let created;
+
+      if (dateEl) {
+        // New structure: parse date from title attribute
+        const titleDate = dateEl.getAttribute('title');
+        created = parseGitLabDate(titleDate);
+      } else {
+        // Fall back to old structure: time element with datetime
+        dateEl = row.querySelector('time[datetime]');
+        if (dateEl) {
+          const datetime = dateEl.getAttribute('datetime');
+          created = datetime ? new Date(datetime) : null;
+        }
       }
 
-      const datetime = timeEl.getAttribute('datetime');
-      if (!datetime) {
+      if (!dateEl || !created) {
         return;
       }
-
-      const created = new Date(datetime);
       const now = new Date();
       const ageMs = now - created;
       const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
@@ -241,30 +303,13 @@
         ageClass = 'gitlab-plus-age-aging';
       }
 
-      // Format age text
-      let ageText;
-      if (ageDays === 0) {
-        ageText = 'today';
-      } else if (ageDays === 1) {
-        ageText = '1d';
-      } else if (ageDays < 7) {
-        ageText = `${ageDays}d`;
-      } else if (ageDays < 14) {
-        ageText = '1w';
-      } else if (ageDays < 30) {
-        ageText = `${Math.floor(ageDays / 7)}w`;
-      } else {
-        ageText = `${Math.floor(ageDays / 30)}mo`;
-      }
-
-      // Create badge
+      // Create dot badge (no text, just colored indicator)
       const badge = document.createElement('span');
-      badge.className = `gitlab-plus-age-badge ${ageClass}`;
-      badge.textContent = ageText;
+      badge.className = `gitlab-plus-age-dot ${ageClass}`;
       badge.title = `Created ${ageDays} day${ageDays !== 1 ? 's' : ''} ago`;
 
-      // Insert badge near the time element
-      timeEl.parentNode.insertBefore(badge, timeEl);
+      // Insert badge near the date element
+      dateEl.parentNode.insertBefore(badge, dateEl);
     });
   }
 
@@ -590,8 +635,12 @@
         return;
       }
 
+      // Get current user for filter parameter transformations
+      const currentUser = await getCurrentUser();
+      const currentUsername = currentUser?.username || null;
+
       // Create and inject container
-      const container = createFiltersContainer(filters);
+      const container = createFiltersContainer(filters, currentUsername);
 
       if (injection.position === 'inside') {
         // Append inside the container (at the end)

@@ -93,31 +93,27 @@
   opacity: 0.8;
 }
 
-/* MR Age Indicator Badges */
-.gitlab-plus-age-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 10px;
-  margin-left: 8px;
-  white-space: nowrap;
+/* MR Age Indicator Dot */
+.gitlab-plus-age-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .gitlab-plus-age-fresh {
-  background: var(--gl-background-color-success-subtle, #d1fab4);
-  color: var(--gl-text-color-success, #217645);
+  background: var(--gl-text-color-success, #217645);
 }
 
 .gitlab-plus-age-aging {
-  background: var(--gl-background-color-warning-subtle, #ffeab6);
-  color: var(--gl-text-color-warning, #9e6a00);
+  background: var(--gl-text-color-warning, #9e6a00);
 }
 
 .gitlab-plus-age-stale {
-  background: var(--gl-background-color-danger-subtle, #fdd4cd);
-  color: var(--gl-text-color-danger, #c91c00);
+  background: var(--gl-text-color-danger, #c91c00);
 }
 
 /* MR Actions Container */
