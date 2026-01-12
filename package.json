@@ -1,6 +1,6 @@
 {
   "name": "gitlab-plus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chrome extension that enhances GitLab with productivity features for merge request workflows",
   "private": true,
   "scripts": {
