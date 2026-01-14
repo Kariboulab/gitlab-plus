@@ -1,7 +1,7 @@
 {
   "name": "GitLab Plus",
   "description": "Enhanced GitLab experience with quick filters and reviewer presets",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "manifest_version": 3,
 
   "permissions": ["storage"],
