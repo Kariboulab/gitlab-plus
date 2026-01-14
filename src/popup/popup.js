@@ -69,6 +69,7 @@ async function loadPreferences() {
     document.querySelector('#toggle-age-indicator input').checked = prefs.enable_age_indicator;
     document.querySelector('#toggle-quick-approve input').checked = prefs.enable_quick_approve;
     document.querySelector('#toggle-copy-mr-link input').checked = prefs.enable_copy_mr_link;
+    document.getElementById('copy-link-format').value = prefs.copy_link_format || 'markdown';
   } catch (error) {
     console.error('Failed to load preferences:', error);
   }
@@ -141,6 +142,17 @@ function setupEventListeners() {
     try {
       const prefs = await sendMessage(MessageTypes.GET_PREFERENCES);
       prefs.enable_copy_mr_link = e.target.checked;
+      await sendMessage(MessageTypes.SAVE_PREFERENCES, { preferences: prefs });
+    } catch (error) {
+      console.error('Failed to save preference:', error);
+    }
+  });
+
+  // Copy link format selector
+  document.getElementById('copy-link-format').addEventListener('change', async (e) => {
+    try {
+      const prefs = await sendMessage(MessageTypes.GET_PREFERENCES);
+      prefs.copy_link_format = e.target.value;
       await sendMessage(MessageTypes.SAVE_PREFERENCES, { preferences: prefs });
     } catch (error) {
       console.error('Failed to save preference:', error);

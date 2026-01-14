@@ -1,101 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitLab Plus</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <div class="popup">
-    <header>
-      <h1>GitLab Plus</h1>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitLab Plus</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="popup">
+      <header>
+        <h1>GitLab Plus</h1>
+      </header>
 
-    <div class="status-section" id="status-section">
-      <div class="status-loading" id="status-loading">
-        <span class="spinner"></span>
-        <span>Loading...</span>
-      </div>
+      <div class="status-section" id="status-section">
+        <div class="status-loading" id="status-loading">
+          <span class="spinner"></span>
+          <span>Loading...</span>
+        </div>
 
-      <div class="status-connected" id="status-connected" style="display: none;">
-        <div class="user-info">
-          <img id="user-avatar" src="" alt="Avatar" class="avatar">
-          <div class="user-details">
-            <strong id="user-name"></strong>
-            <span id="user-username"></span>
+        <div
+          class="status-connected"
+          id="status-connected"
+          style="display: none"
+        >
+          <div class="user-info">
+            <img id="user-avatar" src="" alt="Avatar" class="avatar" />
+            <div class="user-details">
+              <strong id="user-name"></strong>
+              <span id="user-username"></span>
+            </div>
           </div>
+          <div class="status-badge connected">Connected</div>
         </div>
-        <div class="status-badge connected">Connected</div>
+
+        <div
+          class="status-disconnected"
+          id="status-disconnected"
+          style="display: none"
+        >
+          <div class="status-badge disconnected">Not Connected</div>
+          <p class="hint">
+            Configure your GitLab token to enable all features.
+          </p>
+        </div>
       </div>
 
-      <div class="status-disconnected" id="status-disconnected" style="display: none;">
-        <div class="status-badge disconnected">Not Connected</div>
-        <p class="hint">Configure your GitLab token to enable all features.</p>
+      <div class="toggles-section">
+        <div class="section-label">Features</div>
+        <label class="toggle-row">
+          <span>Quick Filters</span>
+          <div class="toggle" id="toggle-filters">
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </div>
+        </label>
+        <label class="toggle-row">
+          <span>Reviewer Presets</span>
+          <div class="toggle" id="toggle-presets">
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </div>
+        </label>
       </div>
+
+      <div class="toggles-section">
+        <div class="section-label">MR List Enhancements</div>
+        <label class="toggle-row">
+          <span>Draft Dimming</span>
+          <div class="toggle" id="toggle-draft-dimming">
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </div>
+        </label>
+        <label class="toggle-row">
+          <span>Age Indicator</span>
+          <div class="toggle" id="toggle-age-indicator">
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </div>
+        </label>
+        <label class="toggle-row">
+          <span>Quick Approve</span>
+          <div class="toggle" id="toggle-quick-approve">
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </div>
+        </label>
+        <label class="toggle-row">
+          <span>Copy MR Link</span>
+          <div class="toggle" id="toggle-copy-mr-link">
+            <input type="checkbox" checked />
+            <span class="slider"></span>
+          </div>
+        </label>
+        <div class="select-row">
+          <span>Copy format</span>
+          <select id="copy-link-format">
+            <option value="markdown">Markdown</option>
+            <option value="url">URL only</option>
+            <option value="title_url">Title: URL</option>
+            <option value="rich">Rich text</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions-section">
+        <button id="open-options" class="btn btn-primary">Open Settings</button>
+      </div>
+
+      <footer>
+        <span>v1.0.1</span>
+      </footer>
     </div>
 
-    <div class="toggles-section">
-      <div class="section-label">Features</div>
-      <label class="toggle-row">
-        <span>Quick Filters</span>
-        <div class="toggle" id="toggle-filters">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </div>
-      </label>
-      <label class="toggle-row">
-        <span>Reviewer Presets</span>
-        <div class="toggle" id="toggle-presets">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </div>
-      </label>
-    </div>
-
-    <div class="toggles-section">
-      <div class="section-label">MR List Enhancements</div>
-      <label class="toggle-row">
-        <span>Draft Dimming</span>
-        <div class="toggle" id="toggle-draft-dimming">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </div>
-      </label>
-      <label class="toggle-row">
-        <span>Age Indicator</span>
-        <div class="toggle" id="toggle-age-indicator">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </div>
-      </label>
-      <label class="toggle-row">
-        <span>Quick Approve</span>
-        <div class="toggle" id="toggle-quick-approve">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </div>
-      </label>
-      <label class="toggle-row">
-        <span>Copy MR Link</span>
-        <div class="toggle" id="toggle-copy-mr-link">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </div>
-      </label>
-    </div>
-
-    <div class="actions-section">
-      <button id="open-options" class="btn btn-primary">
-        Open Settings
-      </button>
-    </div>
-
-    <footer>
-      <span>v1.0.0</span>
-    </footer>
-  </div>
-
-  <script src="popup.js"></script>
-</body>
+    <script src="popup.js"></script>
+  </body>
 </html>

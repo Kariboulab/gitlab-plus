@@ -1,250 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitLab Plus - Settings</title>
-  <link rel="stylesheet" href="options.css">
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>GitLab Plus Settings</h1>
-      <p class="subtitle">Configure your GitLab enhancement experience</p>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GitLab Plus - Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>GitLab Plus Settings</h1>
+        <p class="subtitle">Configure your GitLab enhancement experience</p>
+      </header>
 
-    <!-- Token Section -->
-    <section class="card" id="token-section">
-      <h2>GitLab Personal Access Token</h2>
-      <p class="description">
-        Required for extension features. Create a token at
-        <a href="https://gitlab.com/-/user_settings/personal_access_tokens" target="_blank">GitLab Settings → Access Tokens</a>
-        with the following scopes:
-      </p>
-      <ul class="scope-list">
-        <li><code>api</code> — Full API access (required for adding reviewers to MRs)</li>
-        <li><code>read_user</code> — Read user info (required for searching users in your organization)</li>
-      </ul>
+      <!-- Token Section -->
+      <section class="card" id="token-section">
+        <h2>GitLab Personal Access Token</h2>
+        <p class="description">
+          Required for extension features. Create a token at
+          <a
+            href="https://gitlab.com/-/user_settings/personal_access_tokens"
+            target="_blank"
+            >GitLab Settings → Access Tokens</a
+          >
+          with the following scopes:
+        </p>
+        <ul class="scope-list">
+          <li>
+            <code>api</code> — Full API access (required for adding reviewers to
+            MRs)
+          </li>
+          <li>
+            <code>read_user</code> — Read user info (required for searching
+            users in your organization)
+          </li>
+        </ul>
 
-      <div class="token-status" id="token-status">
-        <span class="status-indicator" id="status-indicator"></span>
-        <span id="status-text">Checking...</span>
-      </div>
-
-      <div class="user-info" id="user-info" style="display: none;">
-        <img id="user-avatar" src="" alt="Avatar" class="avatar">
-        <div>
-          <strong id="user-name"></strong>
-          <span id="user-username"></span>
+        <div class="token-status" id="token-status">
+          <span class="status-indicator" id="status-indicator"></span>
+          <span id="status-text">Checking...</span>
         </div>
-      </div>
 
-      <div class="token-input-group">
-        <input type="password" id="token-input" placeholder="glpat-xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
-        <button id="toggle-visibility" class="btn-icon" title="Show/Hide">
-          <span class="eye-icon">&#128065;</span>
+        <div class="user-info" id="user-info" style="display: none">
+          <img id="user-avatar" src="" alt="Avatar" class="avatar" />
+          <div>
+            <strong id="user-name"></strong>
+            <span id="user-username"></span>
+          </div>
+        </div>
+
+        <div class="token-input-group">
+          <input
+            type="password"
+            id="token-input"
+            placeholder="glpat-xxxxxxxxxxxxxxxxxxxx"
+            autocomplete="off"
+          />
+          <button id="toggle-visibility" class="btn-icon" title="Show/Hide">
+            <span class="eye-icon">&#128065;</span>
+          </button>
+        </div>
+
+        <div class="button-group">
+          <button id="validate-btn" class="btn btn-primary">
+            Validate & Save
+          </button>
+          <button id="clear-btn" class="btn btn-danger" style="display: none">
+            Clear Token
+          </button>
+        </div>
+
+        <div id="token-error" class="error-message" style="display: none"></div>
+
+        <div class="form-group" id="group-config" style="margin-top: 16px">
+          <label for="gitlab-group">GitLab Group</label>
+          <select id="gitlab-group" disabled>
+            <option value="">-- Configure token first --</option>
+          </select>
+          <small
+            >Select your organization to search users within your team.</small
+          >
+        </div>
+      </section>
+
+      <!-- Quick Filters Section -->
+      <section class="card" id="filters-section">
+        <h2>Quick Filters</h2>
+        <p class="description">
+          Create quick filter buttons that appear on MR list pages.
+        </p>
+
+        <div id="filters-list" class="items-list">
+          <!-- Filters will be rendered here -->
+        </div>
+
+        <button id="add-filter-btn" class="btn btn-secondary">
+          + Add Filter
         </button>
-      </div>
 
-      <div class="button-group">
-        <button id="validate-btn" class="btn btn-primary">Validate & Save</button>
-        <button id="clear-btn" class="btn btn-danger" style="display: none;">Clear Token</button>
-      </div>
+        <!-- Add/Edit Filter Modal -->
+        <div id="filter-modal" class="modal" style="display: none">
+          <div class="modal-content">
+            <h3 id="filter-modal-title">Add Filter</h3>
 
-      <div id="token-error" class="error-message" style="display: none;"></div>
-
-      <div class="form-group" id="group-config" style="margin-top: 16px;">
-        <label for="gitlab-group">GitLab Group</label>
-        <select id="gitlab-group" disabled>
-          <option value="">-- Configure token first --</option>
-        </select>
-        <small>Select your organization to search users within your team.</small>
-      </div>
-    </section>
-
-    <!-- Quick Filters Section -->
-    <section class="card" id="filters-section">
-      <h2>Quick Filters</h2>
-      <p class="description">
-        Create quick filter buttons that appear on MR list pages.
-      </p>
-
-      <div id="filters-list" class="items-list">
-        <!-- Filters will be rendered here -->
-      </div>
-
-      <button id="add-filter-btn" class="btn btn-secondary">+ Add Filter</button>
-
-      <!-- Add/Edit Filter Modal -->
-      <div id="filter-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-          <h3 id="filter-modal-title">Add Filter</h3>
-
-          <div class="form-group">
-            <label for="filter-name">Name</label>
-            <input type="text" id="filter-name" placeholder="e.g., My MRs">
-          </div>
-
-          <div class="form-group">
-            <label for="filter-type">Filter Type</label>
-            <select id="filter-type">
-              <option value="scope">Scope (My MRs, Assigned to Me)</option>
-              <option value="author">Author</option>
-              <option value="assignee">Assignee</option>
-              <option value="reviewer">Reviewer</option>
-              <option value="label">Label</option>
-            </select>
-          </div>
-
-          <div class="form-group" id="scope-group">
-            <label for="filter-scope">Scope</label>
-            <select id="filter-scope">
-              <option value="created_by_me">Created by me</option>
-              <option value="assigned_to_me">Assigned to me</option>
-              <option value="all">All</option>
-            </select>
-          </div>
-
-          <div class="form-group" id="username-group" style="display: none;">
-            <label for="filter-username">Username</label>
-            <div class="username-search">
-              <input type="text" id="filter-username" placeholder="Search for a user..." autocomplete="off">
-              <div id="username-search-results" class="search-results" style="display: none;"></div>
+            <div class="form-group">
+              <label for="filter-name">Name</label>
+              <input type="text" id="filter-name" placeholder="e.g., My MRs" />
             </div>
-            <small>Type to search or use @me for current user</small>
-          </div>
 
-          <div class="form-group" id="label-group" style="display: none;">
-            <label for="filter-label">Label</label>
-            <input type="text" id="filter-label" placeholder="e.g., bug">
-          </div>
+            <div class="form-group">
+              <label for="filter-type">Filter Type</label>
+              <select id="filter-type">
+                <option value="scope">Scope (My MRs, Assigned to Me)</option>
+                <option value="author">Author</option>
+                <option value="assignee">Assignee</option>
+                <option value="reviewer">Reviewer</option>
+                <option value="label">Label</option>
+              </select>
+            </div>
 
-          <div class="form-group">
-            <label for="filter-state">State</label>
-            <select id="filter-state">
-              <option value="opened">Opened</option>
-              <option value="merged">Merged</option>
-              <option value="closed">Closed</option>
-              <option value="all">All</option>
-            </select>
-          </div>
+            <div class="form-group" id="scope-group">
+              <label for="filter-scope">Scope</label>
+              <select id="filter-scope">
+                <option value="created_by_me">Created by me</option>
+                <option value="assigned_to_me">Assigned to me</option>
+                <option value="all">All</option>
+              </select>
+            </div>
 
-          <div class="button-group">
-            <button id="filter-save-btn" class="btn btn-primary">Save</button>
-            <button id="filter-cancel-btn" class="btn btn-secondary">Cancel</button>
+            <div class="form-group" id="username-group" style="display: none">
+              <label for="filter-username">Username</label>
+              <div class="username-search">
+                <input
+                  type="text"
+                  id="filter-username"
+                  placeholder="Search for a user..."
+                  autocomplete="off"
+                />
+                <div
+                  id="username-search-results"
+                  class="search-results"
+                  style="display: none"
+                ></div>
+              </div>
+              <small>Type to search or use @me for current user</small>
+            </div>
+
+            <div class="form-group" id="label-group" style="display: none">
+              <label for="filter-label">Label</label>
+              <input type="text" id="filter-label" placeholder="e.g., bug" />
+            </div>
+
+            <div class="form-group">
+              <label for="filter-state">State</label>
+              <select id="filter-state">
+                <option value="opened">Opened</option>
+                <option value="merged">Merged</option>
+                <option value="closed">Closed</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+
+            <div class="button-group">
+              <button id="filter-save-btn" class="btn btn-primary">Save</button>
+              <button id="filter-cancel-btn" class="btn btn-secondary">
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Reviewer Presets Section -->
-    <section class="card" id="presets-section">
-      <h2>Reviewer Presets</h2>
-      <p class="description">
-        Create groups of reviewers to quickly add when creating merge requests.
-      </p>
+      <!-- Reviewer Presets Section -->
+      <section class="card" id="presets-section">
+        <h2>Reviewer Presets</h2>
+        <p class="description">
+          Create groups of reviewers to quickly add when creating merge
+          requests.
+        </p>
 
-      <div id="presets-list" class="items-list">
-        <!-- Presets will be rendered here -->
-      </div>
+        <div id="presets-list" class="items-list">
+          <!-- Presets will be rendered here -->
+        </div>
 
-      <button id="add-preset-btn" class="btn btn-secondary">+ Add Preset</button>
+        <button id="add-preset-btn" class="btn btn-secondary">
+          + Add Preset
+        </button>
 
-      <!-- Add/Edit Preset Modal -->
-      <div id="preset-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-          <h3 id="preset-modal-title">Add Reviewer Preset</h3>
+        <!-- Add/Edit Preset Modal -->
+        <div id="preset-modal" class="modal" style="display: none">
+          <div class="modal-content">
+            <h3 id="preset-modal-title">Add Reviewer Preset</h3>
 
-          <div class="form-group">
-            <label for="preset-name">Preset Name</label>
-            <input type="text" id="preset-name" placeholder="e.g., Frontend Team">
-          </div>
-
-          <div class="form-group">
-            <label>Reviewers</label>
-            <div class="reviewer-search">
-              <input type="text" id="reviewer-search" placeholder="Search users...">
-              <div id="search-results" class="search-results" style="display: none;"></div>
+            <div class="form-group">
+              <label for="preset-name">Preset Name</label>
+              <input
+                type="text"
+                id="preset-name"
+                placeholder="e.g., Frontend Team"
+              />
             </div>
-            <div id="selected-reviewers" class="selected-reviewers">
-              <!-- Selected reviewers will be shown here -->
-            </div>
-          </div>
 
-          <div class="button-group">
-            <button id="preset-save-btn" class="btn btn-primary">Save</button>
-            <button id="preset-cancel-btn" class="btn btn-secondary">Cancel</button>
+            <div class="form-group">
+              <label>Reviewers</label>
+              <div class="reviewer-search">
+                <input
+                  type="text"
+                  id="reviewer-search"
+                  placeholder="Search users..."
+                />
+                <div
+                  id="search-results"
+                  class="search-results"
+                  style="display: none"
+                ></div>
+              </div>
+              <div id="selected-reviewers" class="selected-reviewers">
+                <!-- Selected reviewers will be shown here -->
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button id="preset-save-btn" class="btn btn-primary">Save</button>
+              <button id="preset-cancel-btn" class="btn btn-secondary">
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Preferences Section -->
-    <section class="card" id="preferences-section">
-      <h2>Preferences</h2>
+      <!-- Preferences Section -->
+      <section class="card" id="preferences-section">
+        <h2>Preferences</h2>
 
-      <h3 class="pref-section-title">Core Features</h3>
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pref-enable-filters" checked>
-          Enable quick filters on MR list pages
-        </label>
-      </div>
+        <h3 class="pref-section-title">Core Features</h3>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="pref-enable-filters" checked />
+            Enable quick filters on MR list pages
+          </label>
+        </div>
 
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pref-enable-presets" checked>
-          Enable reviewer presets on MR creation
-        </label>
-      </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="pref-enable-presets" checked />
+            Enable reviewer presets on MR creation
+          </label>
+        </div>
 
-      <h3 class="pref-section-title">MR List Enhancements</h3>
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pref-enable-draft-dimming" checked>
-          Dim draft/WIP merge requests
-        </label>
-        <small>Reduces opacity of MRs with "Draft:" or "WIP:" prefix</small>
-      </div>
+        <h3 class="pref-section-title">MR List Enhancements</h3>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="pref-enable-draft-dimming" checked />
+            Dim draft/WIP merge requests
+          </label>
+          <small>Reduces opacity of MRs with "Draft:" or "WIP:" prefix</small>
+        </div>
 
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pref-enable-age-indicator" checked>
-          Show MR age indicators
-        </label>
-        <small>Adds colored badges for aging/stale MRs</small>
-      </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="pref-enable-age-indicator" checked />
+            Show MR age indicators
+          </label>
+          <small>Adds colored badges for aging/stale MRs</small>
+        </div>
 
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pref-enable-quick-approve" checked>
-          Show quick approve button
-        </label>
-        <small>Adds an approve button on each MR row (requires API token)</small>
-      </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="pref-enable-quick-approve" checked />
+            Show quick approve button
+          </label>
+          <small
+            >Adds an approve button on each MR row (requires API token)</small
+          >
+        </div>
 
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pref-enable-copy-mr-link" checked>
-          Show copy link button
-        </label>
-        <small>Adds a button to copy MR link as markdown [Title](URL)</small>
-      </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="pref-enable-copy-mr-link" checked />
+            Show copy link button
+          </label>
+          <small>Adds a button to copy MR link next to each MR title</small>
+        </div>
 
-      <div class="form-group">
-        <label for="pref-stale-mr-days">Stale MR threshold (days)</label>
-        <input type="number" id="pref-stale-mr-days" value="7" min="1" max="30" style="width: 80px;">
-        <small>MRs older than this are marked as stale</small>
-      </div>
+        <div class="form-group">
+          <label for="pref-copy-link-format">Copy link format</label>
+          <select id="pref-copy-link-format">
+            <option value="markdown">Markdown - [Title](URL)</option>
+            <option value="url">URL only - https://...</option>
+            <option value="title_url">Title + URL - Title: URL</option>
+            <option value="rich">Rich text - clickable title</option>
+          </select>
+          <small>Choose how the MR link is formatted when copied</small>
+        </div>
 
-      <button id="save-prefs-btn" class="btn btn-primary">Save Preferences</button>
-    </section>
+        <div class="form-group">
+          <label for="pref-stale-mr-days">Stale MR threshold (days)</label>
+          <input
+            type="number"
+            id="pref-stale-mr-days"
+            value="7"
+            min="1"
+            max="30"
+            style="width: 80px"
+          />
+          <small>MRs older than this are marked as stale</small>
+        </div>
 
-    <footer>
-      <p>GitLab Plus v1.0.0</p>
-    </footer>
-  </div>
+        <button id="save-prefs-btn" class="btn btn-primary">
+          Save Preferences
+        </button>
+      </section>
 
-  <script src="options.js"></script>
-</body>
+      <footer>
+        <p>GitLab Plus v1.0.1</p>
+      </footer>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
 </html>

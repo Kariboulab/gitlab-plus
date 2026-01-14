@@ -4,6 +4,7 @@
 // ============ Constants ============
 const StorageKeys = {
   TOKEN_ENCRYPTED: 'gitlab_token_encrypted',
+  ENCRYPTION_KEY: 'encryption_key',
   QUICK_FILTERS: 'quick_filters',
   REVIEWER_PRESETS: 'reviewer_presets',
   PREFERENCES: 'preferences',
@@ -49,6 +50,7 @@ const DEFAULT_PREFERENCES = {
   enable_age_indicator: true,
   enable_quick_approve: true,
   enable_copy_mr_link: true,
+  copy_link_format: 'markdown', // 'markdown', 'url', 'title_url', 'slack'
   stale_mr_days: 7
 };
 
@@ -115,7 +117,7 @@ const Storage = {
 
   async clearToken() {
     await this.remove(StorageKeys.TOKEN_ENCRYPTED);
-    await this.removeSession('encryption_key');
+    await this.remove(StorageKeys.ENCRYPTION_KEY);
   },
 
   async getFilters() {
@@ -358,12 +360,12 @@ class GitLabAPI {
 
 // ============ Token Management ============
 async function getOrCreateEncryptionKey() {
-  let keyData = await Storage.getSession('encryption_key');
+  let keyData = await Storage.get(StorageKeys.ENCRYPTION_KEY);
 
   if (!keyData) {
     const key = await Crypto.generateKey();
     keyData = await Crypto.exportKey(key);
-    await Storage.setSession('encryption_key', keyData);
+    await Storage.set(StorageKeys.ENCRYPTION_KEY, keyData);
     return key;
   }
 

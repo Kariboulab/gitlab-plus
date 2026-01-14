@@ -313,8 +313,61 @@
     });
   }
 
+  // Format link based on user preference (returns plain text)
+  function formatMRLink(title, url, format) {
+    switch (format) {
+    case 'url':
+      return url;
+    case 'title_url':
+      return `${title}: ${url}`;
+    case 'rich':
+      return title; // Plain text fallback for rich format
+    case 'markdown':
+    default:
+      return `[${title}](${url})`;
+    }
+  }
+
+  // Get tooltip text for copy button based on format
+  function getCopyButtonTooltip(format) {
+    switch (format) {
+    case 'url':
+      return 'Copy URL only';
+    case 'title_url':
+      return 'Copy as Title: URL';
+    case 'rich':
+      return 'Copy as rich text link';
+    case 'markdown':
+    default:
+      return 'Copy as markdown';
+    }
+  }
+
+  // Copy to clipboard - handles both plain text and rich text formats
+  async function copyToClipboard(title, url, format) {
+    if (format === 'rich') {
+      // Copy as rich text (HTML) - title becomes clickable link
+      const html = `<a href="${url}">${title}</a>`;
+      const plainText = title; // Fallback for plain text paste
+
+      const htmlBlob = new Blob([html], { type: 'text/html' });
+      const textBlob = new Blob([plainText], { type: 'text/plain' });
+
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': htmlBlob,
+          'text/plain': textBlob
+        })
+      ]);
+    } else {
+      // Copy as plain text
+      const formattedLink = formatMRLink(title, url, format);
+      await navigator.clipboard.writeText(formattedLink);
+    }
+  }
+
   // Add copy link buttons to MR rows (next to the title)
-  function addCopyLinkButtons() {
+  function addCopyLinkButtons(format) {
     const rows = getMRRows();
 
     rows.forEach(row => {
@@ -330,17 +383,15 @@
       const copyBtn = document.createElement('button');
       copyBtn.className = 'gitlab-plus-copy-btn gitlab-plus-action-btn';
       copyBtn.textContent = 'Copy link';
-      copyBtn.title = 'Copy link as markdown';
+      copyBtn.title = getCopyButtonTooltip(format);
       copyBtn.type = 'button';
 
       copyBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const markdown = `[${mrInfo.title}](${mrInfo.url})`;
-
         try {
-          await navigator.clipboard.writeText(markdown);
+          await copyToClipboard(mrInfo.title, mrInfo.url, format);
           copyBtn.textContent = 'Copied!';
           copyBtn.classList.add('copied');
           setTimeout(() => {
@@ -564,7 +615,7 @@
     }
 
     if (prefs.enable_copy_mr_link !== false) {
-      addCopyLinkButtons();
+      addCopyLinkButtons(prefs.copy_link_format || 'markdown');
     }
 
     if (prefs.enable_quick_approve !== false) {

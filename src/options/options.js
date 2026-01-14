@@ -545,6 +545,7 @@ async function loadPreferences() {
   document.getElementById('pref-enable-age-indicator').checked = preferences.enable_age_indicator !== false;
   document.getElementById('pref-enable-quick-approve').checked = preferences.enable_quick_approve !== false;
   document.getElementById('pref-enable-copy-mr-link').checked = preferences.enable_copy_mr_link !== false;
+  document.getElementById('pref-copy-link-format').value = preferences.copy_link_format || 'markdown';
   document.getElementById('pref-stale-mr-days').value = preferences.stale_mr_days || 7;
 }
 
@@ -558,6 +559,7 @@ async function savePreferences() {
   preferences.enable_age_indicator = document.getElementById('pref-enable-age-indicator').checked;
   preferences.enable_quick_approve = document.getElementById('pref-enable-quick-approve').checked;
   preferences.enable_copy_mr_link = document.getElementById('pref-enable-copy-mr-link').checked;
+  preferences.copy_link_format = document.getElementById('pref-copy-link-format').value;
   preferences.stale_mr_days = parseInt(document.getElementById('pref-stale-mr-days').value) || 7;
 
   await sendMessage(MessageTypes.SAVE_PREFERENCES, { preferences });
