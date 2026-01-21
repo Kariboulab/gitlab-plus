@@ -91,10 +91,13 @@
         </p>
 
         <div id="filters-list" class="items-list">
-          <!-- Filters will be rendered here -->
+          <div class="loading-indicator" id="filters-loading">
+            <span class="spinner"></span>
+            <span>Loading filters...</span>
+          </div>
         </div>
 
-        <button id="add-filter-btn" class="btn btn-secondary">
+        <button id="add-filter-btn" class="btn btn-secondary" style="display: none">
           + Add Filter
         </button>
 
@@ -104,61 +107,108 @@
             <h3 id="filter-modal-title">Add Filter</h3>
 
             <div class="form-group">
-              <label for="filter-name">Name</label>
-              <input type="text" id="filter-name" placeholder="e.g., My MRs" />
+              <label for="filter-name">Filter Name</label>
+              <input type="text" id="filter-name" placeholder="e.g., My bugs to review" />
             </div>
 
-            <div class="form-group">
-              <label for="filter-type">Filter Type</label>
-              <select id="filter-type">
-                <option value="scope">Scope (My MRs, Assigned to Me)</option>
-                <option value="author">Author</option>
-                <option value="assignee">Assignee</option>
-                <option value="reviewer">Reviewer</option>
-                <option value="label">Label</option>
-              </select>
-            </div>
+            <h4 class="filter-params-title">Filter Parameters</h4>
+            <p class="description filter-params-description">Enable and configure the parameters you want. Leave unchecked to ignore.</p>
 
-            <div class="form-group" id="scope-group">
-              <label for="filter-scope">Scope</label>
-              <select id="filter-scope">
-                <option value="created_by_me">Created by me</option>
-                <option value="assigned_to_me">Assigned to me</option>
-                <option value="all">All</option>
-              </select>
-            </div>
-
-            <div class="form-group" id="username-group" style="display: none">
-              <label for="filter-username">Username</label>
-              <div class="username-search">
-                <input
-                  type="text"
-                  id="filter-username"
-                  placeholder="Search for a user..."
-                  autocomplete="off"
-                />
-                <div
-                  id="username-search-results"
-                  class="search-results"
-                  style="display: none"
-                ></div>
+            <!-- Author -->
+            <div class="filter-param-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="param-author-enabled" />
+                Author
+              </label>
+              <div class="param-input" id="param-author-input" style="display: none">
+                <div class="username-search">
+                  <input type="text" id="filter-author" placeholder="Search user or type @me" autocomplete="off" />
+                  <div id="author-search-results" class="search-results" style="display: none"></div>
+                </div>
               </div>
-              <small>Type to search or use @me for current user</small>
             </div>
 
-            <div class="form-group" id="label-group" style="display: none">
-              <label for="filter-label">Label</label>
-              <input type="text" id="filter-label" placeholder="e.g., bug" />
+            <!-- Assignee -->
+            <div class="filter-param-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="param-assignee-enabled" />
+                Assignee
+              </label>
+              <div class="param-input" id="param-assignee-input" style="display: none">
+                <div class="username-search">
+                  <input type="text" id="filter-assignee" placeholder="Search user or type @me, then press Enter" autocomplete="off" />
+                  <div id="assignee-search-results" class="search-results" style="display: none"></div>
+                </div>
+                <div id="filter-assignee-tags" class="filter-tags"></div>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="filter-state">State</label>
-              <select id="filter-state">
-                <option value="opened">Opened</option>
-                <option value="merged">Merged</option>
-                <option value="closed">Closed</option>
-                <option value="all">All</option>
-              </select>
+            <!-- Reviewer -->
+            <div class="filter-param-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="param-reviewer-enabled" />
+                Reviewer
+              </label>
+              <div class="param-input" id="param-reviewer-input" style="display: none">
+                <div class="username-search">
+                  <input type="text" id="filter-reviewer" placeholder="Search user or type @me" autocomplete="off" />
+                  <div id="reviewer-search-results" class="search-results" style="display: none"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Labels -->
+            <div class="filter-param-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="param-label-enabled" />
+                Labels
+              </label>
+              <div class="param-input" id="param-label-input" style="display: none">
+                <input type="text" id="filter-label" placeholder="Type label name and press Enter" />
+                <div id="filter-label-tags" class="filter-tags"></div>
+              </div>
+            </div>
+
+            <!-- State (optional now) -->
+            <div class="filter-param-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="param-state-enabled" />
+                State
+              </label>
+              <div class="param-input" id="param-state-input" style="display: none">
+                <select id="filter-state">
+                  <option value="opened">Opened</option>
+                  <option value="merged">Merged</option>
+                  <option value="closed">Closed</option>
+                  <option value="all">All</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Draft -->
+            <div class="filter-param-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="param-draft-enabled" />
+                Draft status
+              </label>
+              <div class="param-input" id="param-draft-input" style="display: none">
+                <select id="filter-draft">
+                  <option value="no">Not draft (ready for review)</option>
+                  <option value="yes">Draft only</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Search -->
+            <div class="filter-param-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="param-search-enabled" />
+                Search text
+              </label>
+              <div class="param-input" id="param-search-input" style="display: none">
+                <input type="text" id="filter-search" placeholder="Type search term and press Enter" />
+                <div id="filter-search-tags" class="filter-tags"></div>
+              </div>
             </div>
 
             <div class="button-group">
@@ -180,10 +230,13 @@
         </p>
 
         <div id="presets-list" class="items-list">
-          <!-- Presets will be rendered here -->
+          <div class="loading-indicator" id="presets-loading">
+            <span class="spinner"></span>
+            <span>Loading presets...</span>
+          </div>
         </div>
 
-        <button id="add-preset-btn" class="btn btn-secondary">
+        <button id="add-preset-btn" class="btn btn-secondary" style="display: none">
           + Add Preset
         </button>
 

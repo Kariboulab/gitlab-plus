@@ -54,17 +54,35 @@
     const url = new URL(window.location.href);
     const onDashboard = isDashboardPage();
 
-    // Clear existing filter params
+    // Clear existing filter params (including draft and search)
     const filterParams = [
       'scope',
       'state',
       'author_username',
+      'author_username[]',
       'assignee_username',
+      'assignee_username[]',
       'reviewer_username',
+      'reviewer_username[]',
       'label_name',
-      'label_name[]'
+      'label_name[]',
+      'draft',
+      'search',
+      'search[]'
     ];
     filterParams.forEach((param) => url.searchParams.delete(param));
+
+    // Helper to replace @me with actual username
+    const replaceMe = (val) => (val === '@me' && currentUsername) ? currentUsername : val;
+
+    // Helper to add param (handles single or multiple values)
+    // Uses singular param name - GitLab accepts multiple values for same param
+    const addParam = (paramName, values) => {
+      const processedValues = values.map(v => replaceMe(v)).filter(v => v);
+      processedValues.forEach(v => {
+        url.searchParams.append(paramName, v);
+      });
+    };
 
     // Apply new params with transformations
     Object.entries(filter.params).forEach(([key, value]) => {
@@ -72,9 +90,56 @@
         return;
       }
 
-      // Replace @me with actual username
-      if (value === '@me' && currentUsername) {
-        value = currentUsername;
+      // Handle authors array
+      if (key === 'authors' && Array.isArray(value)) {
+        addParam('author_username', value);
+        return;
+      }
+
+      // Handle assignees array
+      if (key === 'assignees' && Array.isArray(value)) {
+        addParam('assignee_username', value);
+        return;
+      }
+
+      // Handle reviewers array
+      if (key === 'reviewers' && Array.isArray(value)) {
+        addParam('reviewer_username', value);
+        return;
+      }
+
+      // Handle labels array
+      if (key === 'labels' && Array.isArray(value)) {
+        addParam('label_name', value);
+        return;
+      }
+
+      // Handle searches array
+      if (key === 'searches' && Array.isArray(value)) {
+        addParam('search', value);
+        return;
+      }
+
+      // Handle backwards compatibility with old single-value formats
+      if (key === 'author_username') {
+        url.searchParams.set('author_username', replaceMe(value));
+        return;
+      }
+      if (key === 'assignee_username') {
+        url.searchParams.set('assignee_username', replaceMe(value));
+        return;
+      }
+      if (key === 'reviewer_username') {
+        url.searchParams.set('reviewer_username', replaceMe(value));
+        return;
+      }
+      if (key === 'label_name') {
+        url.searchParams.set('label_name', value);
+        return;
+      }
+      if (key === 'search') {
+        url.searchParams.set('search', value);
+        return;
       }
 
       // On non-dashboard pages, transform scope params to explicit username params
@@ -99,27 +164,77 @@
     const url = new URL(window.location.href);
     const onDashboard = isDashboardPage();
 
+    // Helper to replace @me with actual username
+    const replaceMe = (val) => (val === '@me' && currentUsername) ? currentUsername : val;
+
     return Object.entries(filter.params).every(([key, value]) => {
       if (value === undefined || value === null || value === '') {
         return true;
       }
 
-      // Handle @me substitution
-      let expectedValue = value;
-      if (value === '@me' && currentUsername) {
-        expectedValue = currentUsername;
+      // Handle authors array
+      if (key === 'authors' && Array.isArray(value)) {
+        const urlAuthors = url.searchParams.getAll('author_username');
+        return value.every((author) => urlAuthors.includes(replaceMe(author)));
+      }
+
+      // Handle assignees array
+      if (key === 'assignees' && Array.isArray(value)) {
+        const urlAssignees = url.searchParams.getAll('assignee_username');
+        return value.every((assignee) => urlAssignees.includes(replaceMe(assignee)));
+      }
+
+      // Handle reviewers array
+      if (key === 'reviewers' && Array.isArray(value)) {
+        const urlReviewers = url.searchParams.getAll('reviewer_username');
+        return value.every((reviewer) => urlReviewers.includes(replaceMe(reviewer)));
+      }
+
+      // Handle labels array
+      if (key === 'labels' && Array.isArray(value)) {
+        const urlLabels = url.searchParams.getAll('label_name');
+        return value.every((label) => urlLabels.includes(label));
+      }
+
+      // Handle searches array
+      if (key === 'searches' && Array.isArray(value)) {
+        const urlSearches = url.searchParams.getAll('search');
+        return value.every((term) => urlSearches.includes(term));
+      }
+
+      // Handle backwards compatibility with old single-value formats
+      if (key === 'author_username') {
+        const urlAuthors = url.searchParams.getAll('author_username');
+        return urlAuthors.includes(replaceMe(value));
+      }
+      if (key === 'assignee_username') {
+        const urlAssignees = url.searchParams.getAll('assignee_username');
+        return urlAssignees.includes(replaceMe(value));
+      }
+      if (key === 'reviewer_username') {
+        const urlReviewers = url.searchParams.getAll('reviewer_username');
+        return urlReviewers.includes(replaceMe(value));
+      }
+      if (key === 'label_name') {
+        const urlLabels = url.searchParams.getAll('label_name');
+        return urlLabels.includes(value);
+      }
+      if (key === 'search') {
+        return url.searchParams.get('search') === value;
       }
 
       // On non-dashboard pages, check transformed params
       if (!onDashboard && key === 'scope' && currentUsername) {
         if (value === 'created_by_me') {
-          return url.searchParams.get('author_username') === currentUsername;
+          const urlAuthors = url.searchParams.getAll('author_username');
+          return urlAuthors.includes(currentUsername);
         } else if (value === 'assigned_to_me') {
-          return url.searchParams.get('assignee_username') === currentUsername;
+          const urlAssignees = url.searchParams.getAll('assignee_username');
+          return urlAssignees.includes(currentUsername);
         }
       }
 
-      return url.searchParams.get(key) === expectedValue;
+      return url.searchParams.get(key) === value;
     });
   }
 
@@ -166,10 +281,16 @@
         'scope',
         'state',
         'author_username',
+        'author_username[]',
         'assignee_username',
+        'assignee_username[]',
         'reviewer_username',
+        'reviewer_username[]',
         'label_name',
-        'label_name[]'
+        'label_name[]',
+        'draft',
+        'search',
+        'search[]'
       ];
       filterParams.forEach((param) => url.searchParams.delete(param));
       window.location.href = url.toString();

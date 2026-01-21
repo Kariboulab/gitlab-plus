@@ -505,12 +505,126 @@ header h1 {
   color: var(--color-danger);
 }
 
+/* Filter Parameter Builder */
+.filter-params-title {
+  margin: 16px 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.filter-params-description {
+  margin-bottom: 12px;
+}
+
+.filter-param-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.filter-param-row:last-of-type {
+  border-bottom: none;
+  margin-bottom: 16px;
+}
+
+.filter-param-row .checkbox-label {
+  font-weight: 500;
+}
+
+.param-input {
+  margin-left: 24px;
+}
+
+.param-input input,
+.param-input select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+}
+
+.param-input input:focus,
+.param-input select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(107, 79, 187, 0.2);
+}
+
+.param-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-gray-500);
+  font-size: 12px;
+}
+
+/* Filter tags (for multi-value parameters) */
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.filter-tags:empty {
+  display: none;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--color-gray-100);
+  border-radius: var(--border-radius);
+  font-size: 12px;
+}
+
+.filter-tag .remove {
+  cursor: pointer;
+  color: var(--color-gray-500);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.filter-tag .remove:hover {
+  color: var(--color-danger);
+}
+
 /* Footer */
 footer {
   text-align: center;
   padding: 16px;
   color: var(--color-gray-500);
   font-size: 12px;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  color: var(--color-gray-500);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-gray-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Dark theme - follows system preference */
@@ -642,5 +756,20 @@ footer {
 
   .status-indicator.disconnected {
     background: #f87171;
+  }
+
+  .filter-param-row {
+    border-bottom-color: var(--color-gray-200);
+  }
+
+  .param-input input,
+  .param-input select {
+    background: var(--color-gray-100);
+    border-color: var(--color-gray-200);
+    color: var(--color-gray-900);
+  }
+
+  .filter-tag {
+    background: var(--color-gray-200);
   }
 }

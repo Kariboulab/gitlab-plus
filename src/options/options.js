@@ -27,6 +27,13 @@ let editingFilterId = null;
 let editingPresetId = null;
 let selectedReviewers = [];
 
+// Filter tag state (for multi-value parameters)
+const filterTags = {
+  assignee: [],
+  label: [],
+  search: []
+};
+
 // Send message to background script
 async function sendMessage(type, payload = {}) {
   return new Promise((resolve, reject) => {
@@ -190,6 +197,8 @@ async function saveGroup() {
 async function loadFilters() {
   filters = await sendMessage(MessageTypes.GET_FILTERS);
   renderFilters();
+  // Show add button after loading
+  document.getElementById('add-filter-btn').style.display = '';
 }
 
 function renderFilters() {
@@ -221,25 +230,84 @@ function renderFilters() {
 
 function getFilterDescription(filter) {
   const parts = [];
-  if (filter.params.scope) {
-    parts.push(`Scope: ${filter.params.scope}`);
-  }
-  if (filter.params.author_username) {
+  // Handle array format for authors
+  if (filter.params.authors && filter.params.authors.length > 0) {
+    parts.push(`Author: ${filter.params.authors.join(', ')}`);
+  } else if (filter.params.author_username) {
     parts.push(`Author: ${filter.params.author_username}`);
   }
-  if (filter.params.assignee_username) {
+  // Handle array format for assignees
+  if (filter.params.assignees && filter.params.assignees.length > 0) {
+    parts.push(`Assignee: ${filter.params.assignees.join(', ')}`);
+  } else if (filter.params.assignee_username) {
     parts.push(`Assignee: ${filter.params.assignee_username}`);
   }
-  if (filter.params.reviewer_username) {
+  // Handle array format for reviewers
+  if (filter.params.reviewers && filter.params.reviewers.length > 0) {
+    parts.push(`Reviewer: ${filter.params.reviewers.join(', ')}`);
+  } else if (filter.params.reviewer_username) {
     parts.push(`Reviewer: ${filter.params.reviewer_username}`);
   }
-  if (filter.params.label_name) {
+  // Handle array format for labels
+  if (filter.params.labels && filter.params.labels.length > 0) {
+    parts.push(`Labels: ${filter.params.labels.join(', ')}`);
+  } else if (filter.params.label_name) {
     parts.push(`Label: ${filter.params.label_name}`);
   }
   if (filter.params.state) {
     parts.push(`State: ${filter.params.state}`);
   }
-  return parts.join(' | ');
+  if (filter.params.draft) {
+    parts.push(`Draft: ${filter.params.draft === 'yes' ? 'Yes' : 'No'}`);
+  }
+  // Handle array format for search
+  if (filter.params.searches && filter.params.searches.length > 0) {
+    parts.push(`Search: ${filter.params.searches.map(s => `"${s}"`).join(', ')}`);
+  } else if (filter.params.search) {
+    parts.push(`Search: "${filter.params.search}"`);
+  }
+  return parts.join(' | ') || 'No parameters set';
+}
+
+// Filter tag management
+function renderFilterTags(type) {
+  const container = document.getElementById(`filter-${type}-tags`);
+  if (!container) {
+    return;
+  }
+
+  if (filterTags[type].length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = filterTags[type].map((value, index) => `
+    <span class="filter-tag" data-type="${type}" data-index="${index}">
+      <span>${escapeHtml(value)}</span>
+      <span class="remove" data-action="remove-filter-tag">&times;</span>
+    </span>
+  `).join('');
+}
+
+function addFilterTag(type, value) {
+  value = value.trim();
+  if (!value || filterTags[type].includes(value)) {
+    return;
+  }
+  filterTags[type].push(value);
+  renderFilterTags(type);
+}
+
+function removeFilterTag(type, index) {
+  filterTags[type].splice(index, 1);
+  renderFilterTags(type);
+}
+
+function clearFilterTags() {
+  Object.keys(filterTags).forEach(type => {
+    filterTags[type] = [];
+    renderFilterTags(type);
+  });
 }
 
 function openFilterModal(filter = null) {
@@ -249,70 +317,190 @@ function openFilterModal(filter = null) {
   editingFilterId = filter ? filter.id : null;
   title.textContent = filter ? 'Edit Filter' : 'Add Filter';
 
-  // Reset form
+  // Reset filter name
   document.getElementById('filter-name').value = filter?.name || '';
-  document.getElementById('filter-type').value = filter?.type || 'scope';
-  document.getElementById('filter-scope').value = filter?.params.scope || 'created_by_me';
-  document.getElementById('filter-username').value =
-    filter?.params.author_username ||
-    filter?.params.assignee_username ||
-    filter?.params.reviewer_username || '';
-  document.getElementById('filter-label').value = filter?.params.label_name || '';
-  document.getElementById('filter-state').value = filter?.params.state || 'opened';
 
-  updateFilterTypeFields();
+  // Clear all filter tags
+  clearFilterTags();
+
+  // Reset all parameter checkboxes, inputs, and tags
+  const singleValueParams = ['author', 'reviewer']; // Single value params
+  const tagParams = ['assignee', 'label', 'search']; // Multi-value tag params
+  const selectParams = {
+    state: { inputId: 'filter-state', defaultValue: 'opened' },
+    draft: { inputId: 'filter-draft', defaultValue: 'no' }
+  };
+
+  // Reset single-value params
+  singleValueParams.forEach(id => {
+    const checkbox = document.getElementById(`param-${id}-enabled`);
+    const inputDiv = document.getElementById(`param-${id}-input`);
+    const input = document.getElementById(`filter-${id}`);
+
+    checkbox.checked = false;
+    inputDiv.style.display = 'none';
+    input.value = '';
+  });
+
+  // Reset tag-based params
+  tagParams.forEach(id => {
+    const checkbox = document.getElementById(`param-${id}-enabled`);
+    const inputDiv = document.getElementById(`param-${id}-input`);
+    const input = document.getElementById(`filter-${id}`);
+
+    checkbox.checked = false;
+    inputDiv.style.display = 'none';
+    input.value = '';
+  });
+
+  // Reset select-based params
+  Object.entries(selectParams).forEach(([id, config]) => {
+    const checkbox = document.getElementById(`param-${id}-enabled`);
+    const inputDiv = document.getElementById(`param-${id}-input`);
+    const input = document.getElementById(config.inputId);
+
+    checkbox.checked = false;
+    inputDiv.style.display = 'none';
+    input.value = config.defaultValue;
+  });
+
+  // If editing, populate from existing filter params
+  if (filter && filter.params) {
+    // Populate single-value params (author, reviewer)
+    const singleMapping = {
+      author: { key: 'author_username', arrayKey: 'authors' },
+      reviewer: { key: 'reviewer_username', arrayKey: 'reviewers' }
+    };
+
+    Object.entries(singleMapping).forEach(([type, keys]) => {
+      let value = filter.params[keys.key];
+      // Backwards compatibility: get first value from array if present
+      if (!value && filter.params[keys.arrayKey] && filter.params[keys.arrayKey].length > 0) {
+        value = filter.params[keys.arrayKey][0];
+      }
+      if (value) {
+        const checkbox = document.getElementById(`param-${type}-enabled`);
+        const inputDiv = document.getElementById(`param-${type}-input`);
+        const input = document.getElementById(`filter-${type}`);
+        checkbox.checked = true;
+        inputDiv.style.display = 'block';
+        input.value = value;
+      }
+    });
+
+    // Populate tag-based params (assignee, label, search)
+    const tagMapping = {
+      assignee: { arrayKey: 'assignees', singleKey: 'assignee_username' },
+      label: { arrayKey: 'labels', singleKey: 'label_name' },
+      search: { arrayKey: 'searches', singleKey: 'search' }
+    };
+
+    Object.entries(tagMapping).forEach(([type, keys]) => {
+      let values = filter.params[keys.arrayKey];
+      // Backwards compatibility with single value format
+      if (!values && filter.params[keys.singleKey]) {
+        values = [filter.params[keys.singleKey]];
+      }
+      if (values && values.length > 0) {
+        const checkbox = document.getElementById(`param-${type}-enabled`);
+        const inputDiv = document.getElementById(`param-${type}-input`);
+        checkbox.checked = true;
+        inputDiv.style.display = 'block';
+        filterTags[type] = [...values];
+        renderFilterTags(type);
+      }
+    });
+
+    // Populate select-based params
+    Object.entries(selectParams).forEach(([id, config]) => {
+      const paramKey = id; // state, draft
+      if (filter.params[paramKey]) {
+        const checkbox = document.getElementById(`param-${id}-enabled`);
+        const inputDiv = document.getElementById(`param-${id}-input`);
+        const input = document.getElementById(config.inputId);
+        checkbox.checked = true;
+        inputDiv.style.display = 'block';
+        input.value = filter.params[paramKey];
+      }
+    });
+  }
+
+  // Hide any open search results
+  document.querySelectorAll('.search-results').forEach(el => el.style.display = 'none');
+
   modal.style.display = 'flex';
-}
-
-function updateFilterTypeFields() {
-  const type = document.getElementById('filter-type').value;
-  const scopeGroup = document.getElementById('scope-group');
-  const usernameGroup = document.getElementById('username-group');
-  const labelGroup = document.getElementById('label-group');
-
-  scopeGroup.style.display = type === 'scope' ? 'block' : 'none';
-  usernameGroup.style.display = ['author', 'assignee', 'reviewer'].includes(type) ? 'block' : 'none';
-  labelGroup.style.display = type === 'label' ? 'block' : 'none';
 }
 
 async function saveFilter() {
   const name = document.getElementById('filter-name').value.trim();
-  const type = document.getElementById('filter-type').value;
-  const state = document.getElementById('filter-state').value;
 
   if (!name) {
     alert('Please enter a filter name');
     return;
   }
 
-  const params = { state };
+  // Build params object from enabled checkboxes and inputs/tags
+  const params = {};
 
-  if (type === 'scope') {
-    params.scope = document.getElementById('filter-scope').value;
-  } else if (type === 'author') {
-    params.author_username = document.getElementById('filter-username').value.trim();
-  } else if (type === 'assignee') {
-    params.assignee_username = document.getElementById('filter-username').value.trim();
-  } else if (type === 'reviewer') {
-    params.reviewer_username = document.getElementById('filter-username').value.trim();
-  } else if (type === 'label') {
-    params.label_name = document.getElementById('filter-label').value.trim();
+  // Single-value params (author, reviewer)
+  if (document.getElementById('param-author-enabled').checked) {
+    const val = document.getElementById('filter-author').value.trim();
+    if (val) {
+      params.author_username = val;
+    }
   }
+
+  if (document.getElementById('param-reviewer-enabled').checked) {
+    const val = document.getElementById('filter-reviewer').value.trim();
+    if (val) {
+      params.reviewer_username = val;
+    }
+  }
+
+  // Tag-based params (use arrays)
+  if (document.getElementById('param-assignee-enabled').checked && filterTags.assignee.length > 0) {
+    params.assignees = [...filterTags.assignee];
+  }
+
+  if (document.getElementById('param-label-enabled').checked && filterTags.label.length > 0) {
+    params.labels = [...filterTags.label];
+  }
+
+  if (document.getElementById('param-search-enabled').checked && filterTags.search.length > 0) {
+    params.searches = [...filterTags.search];
+  }
+
+  // Select-based params
+  if (document.getElementById('param-state-enabled').checked) {
+    params.state = document.getElementById('filter-state').value;
+  }
+
+  if (document.getElementById('param-draft-enabled').checked) {
+    params.draft = document.getElementById('filter-draft').value;
+  }
+
+  // Require at least one parameter
+  if (Object.keys(params).length === 0) {
+    alert('Please enable and configure at least one filter parameter');
+    return;
+  }
+
+  // Save filter (no type field needed)
+  const filter = {
+    id: editingFilterId || generateId(),
+    name,
+    enabled: editingFilterId ? filters.find(f => f.id === editingFilterId)?.enabled ?? true : true,
+    order: editingFilterId ? filters.find(f => f.id === editingFilterId)?.order ?? filters.length : filters.length,
+    params
+  };
 
   if (editingFilterId) {
     const index = filters.findIndex(f => f.id === editingFilterId);
     if (index !== -1) {
-      filters[index] = { ...filters[index], name, type, params };
+      filters[index] = filter;
     }
   } else {
-    filters.push({
-      id: generateId(),
-      name,
-      type,
-      enabled: true,
-      order: filters.length,
-      params
-    });
+    filters.push(filter);
   }
 
   await sendMessage(MessageTypes.SAVE_FILTERS, { filters });
@@ -322,7 +510,8 @@ async function saveFilter() {
 
 function closeFilterModal() {
   document.getElementById('filter-modal').style.display = 'none';
-  document.getElementById('username-search-results').style.display = 'none';
+  // Hide all search results dropdowns
+  document.querySelectorAll('.search-results').forEach(el => el.style.display = 'none');
   editingFilterId = null;
 }
 
@@ -347,6 +536,8 @@ async function deleteFilter(id) {
 async function loadPresets() {
   presets = await sendMessage(MessageTypes.GET_REVIEWER_PRESETS);
   renderPresets();
+  // Show add button after loading
+  document.getElementById('add-preset-btn').style.display = '';
 }
 
 function renderPresets() {
@@ -444,15 +635,6 @@ async function searchReviewers(query) {
   searchTimeout = setTimeout(() => searchUsers(query, 'search-results'), 300);
 }
 
-async function searchFilterUsername(query) {
-  clearTimeout(usernameSearchTimeout);
-  usernameSearchTimeout = setTimeout(() => searchUsers(query, 'username-search-results'), 300);
-}
-
-function selectFilterUsername(username) {
-  document.getElementById('filter-username').value = username;
-  document.getElementById('username-search-results').style.display = 'none';
-}
 
 function addReviewer(username, userId, displayName, avatarUrl) {
   if (selectedReviewers.find(r => r.username === username)) {
@@ -588,27 +770,102 @@ function setupEventListeners() {
   document.getElementById('add-filter-btn').addEventListener('click', () => openFilterModal());
   document.getElementById('filter-save-btn').addEventListener('click', saveFilter);
   document.getElementById('filter-cancel-btn').addEventListener('click', closeFilterModal);
-  document.getElementById('filter-type').addEventListener('change', updateFilterTypeFields);
 
-  // Username autocomplete for filters
-  document.getElementById('filter-username').addEventListener('input', (e) => {
-    searchFilterUsername(e.target.value);
+  // Parameter checkbox toggle listeners
+  const paramIds = ['author', 'assignee', 'reviewer', 'label', 'state', 'draft', 'search'];
+  paramIds.forEach(id => {
+    document.getElementById(`param-${id}-enabled`).addEventListener('change', (e) => {
+      document.getElementById(`param-${id}-input`).style.display = e.target.checked ? 'block' : 'none';
+    });
   });
 
-  document.getElementById('username-search-results').addEventListener('click', (e) => {
-    const result = e.target.closest('.search-result');
-    if (result && result.dataset.username) {
-      selectFilterUsername(result.dataset.username);
+  // Username autocomplete for author, assignee, reviewer fields (with tag support)
+  const usernameFields = [
+    { inputId: 'filter-author', resultsId: 'author-search-results', tagType: null }, // single value
+    { inputId: 'filter-assignee', resultsId: 'assignee-search-results', tagType: 'assignee' },
+    { inputId: 'filter-reviewer', resultsId: 'reviewer-search-results', tagType: null } // single value
+  ];
+
+  usernameFields.forEach(({ inputId, resultsId, tagType }) => {
+    const input = document.getElementById(inputId);
+    const results = document.getElementById(resultsId);
+
+    input.addEventListener('input', (e) => {
+      clearTimeout(usernameSearchTimeout);
+      usernameSearchTimeout = setTimeout(() => searchUsers(e.target.value, resultsId), 300);
+    });
+
+    // For tag-based fields, add tag on Enter; for single-value fields, just hide results
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const val = input.value.trim();
+        if (val && tagType) {
+          // Tag-based: add tag and clear input
+          addFilterTag(tagType, val);
+          input.value = '';
+        }
+        // Single-value: just keep the value in input
+        results.style.display = 'none';
+      }
+    });
+
+    // Handle autocomplete selection
+    results.addEventListener('click', (e) => {
+      const result = e.target.closest('.search-result');
+      if (result && result.dataset.username) {
+        if (tagType) {
+          // Tag-based: add tag and clear input
+          addFilterTag(tagType, result.dataset.username);
+          input.value = '';
+        } else {
+          // Single-value: set the input value
+          input.value = result.dataset.username;
+        }
+        results.style.display = 'none';
+      }
+    });
+  });
+
+  // Tag input for labels and search (no autocomplete, just Enter to add)
+  const textTagFields = [
+    { inputId: 'filter-label', tagType: 'label' },
+    { inputId: 'filter-search', tagType: 'search' }
+  ];
+
+  textTagFields.forEach(({ inputId, tagType }) => {
+    const input = document.getElementById(inputId);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const val = input.value.trim();
+        if (val) {
+          addFilterTag(tagType, val);
+          input.value = '';
+        }
+      }
+    });
+  });
+
+  // Remove filter tags on click
+  document.getElementById('filter-modal').addEventListener('click', (e) => {
+    if (e.target.dataset.action === 'remove-filter-tag') {
+      const tag = e.target.closest('.filter-tag');
+      if (tag) {
+        removeFilterTag(tag.dataset.type, parseInt(tag.dataset.index));
+      }
     }
   });
 
-  // Hide username results when clicking outside
+  // Hide search results when clicking outside
   document.addEventListener('click', (e) => {
-    const usernameResults = document.getElementById('username-search-results');
-    const usernameInput = document.getElementById('filter-username');
-    if (!usernameInput.contains(e.target) && !usernameResults.contains(e.target)) {
-      usernameResults.style.display = 'none';
-    }
+    usernameFields.forEach(({ inputId, resultsId }) => {
+      const input = document.getElementById(inputId);
+      const results = document.getElementById(resultsId);
+      if (!input.contains(e.target) && !results.contains(e.target)) {
+        results.style.display = 'none';
+      }
+    });
   });
 
   document.getElementById('filters-list').addEventListener('click', (e) => {

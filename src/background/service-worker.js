@@ -16,26 +16,23 @@ const DEFAULT_FILTERS = [
   {
     id: 'default-my-mrs',
     name: 'My MRs',
-    type: 'scope',
     enabled: true,
     order: 0,
-    params: { scope: 'created_by_me', state: 'opened' }
+    params: { author_username: '@me' }
   },
   {
     id: 'default-assigned-to-me',
     name: 'Assigned to Me',
-    type: 'scope',
     enabled: true,
     order: 1,
-    params: { scope: 'assigned_to_me', state: 'opened' }
+    params: { assignees: ['@me'] }
   },
   {
     id: 'default-review-requested',
     name: 'Review Requested',
-    type: 'reviewer',
     enabled: true,
     order: 2,
-    params: { reviewer_username: '@me', state: 'opened' }
+    params: { reviewer_username: '@me' }
   }
 ];
 
@@ -171,12 +168,113 @@ const Storage = {
     const data = await chrome.storage.local.get(null);
     if (data[StorageKeys.QUICK_FILTERS] === undefined) {
       await this.setFilters(DEFAULT_FILTERS);
+    } else {
+      // Migrate existing filters to new format
+      await this.migrateFilters();
     }
     if (data[StorageKeys.PREFERENCES] === undefined) {
       await this.setPreferences(DEFAULT_PREFERENCES);
     }
     if (data[StorageKeys.REVIEWER_PRESETS] === undefined) {
       await this.setReviewerPresets([]);
+    }
+  },
+
+  // Migrate old filter format to new format
+  // author_username and reviewer_username are single values
+  // assignees is an array
+  async migrateFilters() {
+    const filters = await this.getFilters();
+    const cachedUser = await this.getCachedUser();
+    const username = cachedUser?.username;
+    let needsSave = false;
+
+    // Helper to replace @me with actual username
+    const replaceMe = (val) => (val === '@me' && username) ? username : val;
+
+    const migratedFilters = filters.map(filter => {
+      const params = { ...filter.params };
+      let changed = false;
+
+      // Migrate scope to author_username/assignees
+      if (params.scope) {
+        if (params.scope === 'created_by_me') {
+          if (!params.author_username) {
+            params.author_username = username || '@me';
+          }
+        } else if (params.scope === 'assigned_to_me') {
+          if (!params.assignees) {
+            params.assignees = [username || '@me'];
+          }
+        }
+        delete params.scope;
+        changed = true;
+      }
+
+      // Migrate authors array to single author_username (take first)
+      if (params.authors && !params.author_username) {
+        params.author_username = replaceMe(params.authors[0]);
+        delete params.authors;
+        changed = true;
+      }
+
+      // Migrate single assignee_username to assignees array
+      if (params.assignee_username && !params.assignees) {
+        params.assignees = [replaceMe(params.assignee_username)];
+        delete params.assignee_username;
+        changed = true;
+      }
+
+      // Migrate reviewers array to single reviewer_username (take first)
+      if (params.reviewers && !params.reviewer_username) {
+        params.reviewer_username = replaceMe(params.reviewers[0]);
+        delete params.reviewers;
+        changed = true;
+      }
+
+      // Migrate single label_name to labels array
+      if (params.label_name && !params.labels) {
+        params.labels = [params.label_name];
+        delete params.label_name;
+        changed = true;
+      }
+
+      // Migrate single search to searches array
+      if (params.search && !params.searches) {
+        params.searches = [params.search];
+        delete params.search;
+        changed = true;
+      }
+
+      // Replace @me in single values and arrays if we have the username
+      if (username) {
+        if (params.author_username === '@me') {
+          params.author_username = username;
+          changed = true;
+        }
+        if (params.reviewer_username === '@me') {
+          params.reviewer_username = username;
+          changed = true;
+        }
+        if (params.assignees) {
+          const newAssignees = params.assignees.map(replaceMe);
+          if (JSON.stringify(newAssignees) !== JSON.stringify(params.assignees)) {
+            params.assignees = newAssignees;
+            changed = true;
+          }
+        }
+      }
+
+      if (changed) {
+        needsSave = true;
+        return { ...filter, params };
+      }
+      return filter;
+    });
+
+    if (needsSave) {
+      await this.setFilters(migratedFilters);
+      console.log('GitLab Plus: Migrated filters to new format');
     }
   }
 };
@@ -404,9 +502,60 @@ async function validateToken(token) {
 
   if (result.valid) {
     await Storage.setCachedUser(result.user);
+    // Replace @me with actual username in all filters
+    await replaceAtMeInFilters(result.user.username);
   }
 
   return result;
+}
+
+// Replace @me placeholder with actual username in all filters
+async function replaceAtMeInFilters(username) {
+  if (!username) {
+    return;
+  }
+
+  const filters = await Storage.getFilters();
+  let needsSave = false;
+
+  const updatedFilters = filters.map(filter => {
+    const params = { ...filter.params };
+    let changed = false;
+
+    // Replace @me in author_username (single value)
+    if (params.author_username === '@me') {
+      params.author_username = username;
+      changed = true;
+    }
+
+    // Replace @me in reviewer_username (single value)
+    if (params.reviewer_username === '@me') {
+      params.reviewer_username = username;
+      changed = true;
+    }
+
+    // Replace @me in assignees array
+    if (params.assignees) {
+      params.assignees = params.assignees.map(v => {
+        if (v === '@me') {
+          changed = true;
+          return username;
+        }
+        return v;
+      });
+    }
+
+    if (changed) {
+      needsSave = true;
+      return { ...filter, params };
+    }
+    return filter;
+  });
+
+  if (needsSave) {
+    await Storage.setFilters(updatedFilters);
+    console.log('GitLab Plus: Replaced @me with username in filters');
+  }
 }
 
 async function getCurrentUser() {
@@ -609,6 +758,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await Storage.initialize();
     console.log('GitLab Plus extension installed');
   } else if (details.reason === 'update') {
+    // Run migration on update to convert old filter formats
+    await Storage.migrateFilters();
     console.log('GitLab Plus extension updated');
   }
 });
